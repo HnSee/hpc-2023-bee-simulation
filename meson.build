@@ -10,7 +10,8 @@ project(
 
 src = [
   'src/main.cpp',
-  'src/world/generator.cpp'
+  'src/world/generator.cpp',
+  'src/extern/simplex/SimplexNoise.cpp'
 ]
 
 spdlog = subproject('spdlog')

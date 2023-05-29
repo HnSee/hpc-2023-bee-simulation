@@ -1,12 +1,18 @@
 #define JC_VORONOI_IMPLEMENTATION
+#define DB_PERLIN_IMPL
 
 #include "generator.hpp"
 #include "../extern/jc_voronoi.h"
+#include "../extern/simplex/SimplexNoise.h"
 #include <cairomm/context.h>
 #include <cairomm/surface.h>
 #include <cstring>
 #include <spdlog/spdlog.h>
 #include <sstream>
+
+float clip(float n, float lower, float upper) {
+  return std::max(lower, std::min(n, upper));
+}
 
 static void relax_points(const jcv_diagram *diagram, jcv_point *points) {
   const jcv_site *sites = jcv_diagram_get_sites(diagram);
@@ -29,35 +35,37 @@ static void relax_points(const jcv_diagram *diagram, jcv_point *points) {
   }
 }
 
-WorldGenerator::WorldGenerator(unsigned int seed, unsigned int edgeLength,
-                               unsigned int biomes, unsigned int relaxations) {
-  this->seed = seed;
-  this->edgeLength = edgeLength;
-  this->biomes = biomes;
-  this->relaxations = relaxations;
-  currentWorld = new worldCell[edgeLength * edgeLength];
+WorldMap *WorldGenerator::generateWorld() {
+  this->currentZoom = this->initialZoom;
+  srand(this->seed);
+
+  this->generateVoronoiRepresentation();
+  this->generateVoronoiSVG("stage_1.svg");
+  this->rasterizeVoronoiRepresentation();
+  this->generateWorldImage("stage_3.png");
+  this->blurEdges();
+  this->generateWorldImage("stage_4.png");
+
+  return &this->currentWorld;
 }
 
-WorldGenerator::~WorldGenerator() { delete[] currentWorld; }
-
-worldCell *WorldGenerator::generateWorld() {
-  srand(this->seed);
+void WorldGenerator::generateVoronoiRepresentation() {
   memset(&this->currentVoronoiRepresentation, 0, sizeof(jcv_diagram));
 
   jcv_rect boundingBox;
   boundingBox.min.x = 0;
   boundingBox.min.y = 0;
-  boundingBox.max.x = this->edgeLength;
-  boundingBox.max.y = this->edgeLength;
+  boundingBox.max.x = this->size;
+  boundingBox.max.y = this->size;
 
   jcv_point *points = new jcv_point[this->biomes]();
 
   spdlog::debug("Generating random biome points...");
   for (unsigned int b = 0; b < this->biomes; b++) {
     points[b].x = static_cast<float>(rand()) /
-                  (static_cast<float>(RAND_MAX / this->edgeLength));
+                  (static_cast<float>(RAND_MAX / this->size));
     points[b].y = static_cast<float>(rand()) /
-                  (static_cast<float>(RAND_MAX / this->edgeLength));
+                  (static_cast<float>(RAND_MAX / this->size));
   }
   spdlog::debug("Random biome points generated.");
 
@@ -76,12 +84,10 @@ worldCell *WorldGenerator::generateWorld() {
   jcv_diagram_generate(this->biomes, points, &boundingBox, nullptr,
                        &this->currentVoronoiRepresentation);
   spdlog::debug("Voronoi diagram generated.");
-
-  return this->currentWorld;
 }
 
-void WorldGenerator::generateWorldImage(std::string outputPath) {
-  unsigned int width = this->edgeLength;
+void WorldGenerator::generateVoronoiSVG(std::string outputPath) {
+  unsigned int width = this->size;
 
   auto surface = Cairo::SvgSurface::create(outputPath, width, width);
   auto cr = Cairo::Context::create(surface);
@@ -115,31 +121,134 @@ void WorldGenerator::generateWorldImage(std::string outputPath) {
     cr->fill();
 
     cr->set_source_rgb(255, 0, 0);
-    cr->arc(site->p.x, site->p.y, 50, 0, 2 * M_PI);
+    cr->arc(site->p.x, site->p.y, 10, 0, 2 * M_PI);
     cr->fill();
   }
 
-  int dimensions[] = {100, 10, 1};
-  int dimensions_num = 3;
-  int dimensions_distance = 5;
-  int dimensions_line_width = 5;
-  int dimensions_text_distance = 2;
-  std::string unit = "dm";
+  cr->show_page();
+}
 
-  for (int i = 0; i < dimensions_num; i++) {
-    cr->move_to(0.01 * width, 0.01 * width + i * dimensions_distance);
-    cr->set_source_rgb(0, 0, 0);
-    cr->rel_line_to(dimensions[i], 0);
-    cr->set_line_width(dimensions_line_width);
-    cr->stroke();
+void WorldGenerator::rasterizeVoronoiRepresentation() {
+  unsigned int width = this->size;
 
-    cr->move_to(0.01 * width, 0.01 * width + i * dimensions_distance);
-    cr->rel_move_to(dimensions[i] / 2, dimensions_text_distance);
-    std::ostringstream unitText;
-    unitText << dimensions[i] << " " << unit;
-    cr->set_font_size(10);
-    cr->show_text(unitText.str());
+  auto surface =
+      Cairo::ImageSurface::create(Cairo::Format::FORMAT_RGB24, width, width);
+  auto cr = Cairo::Context::create(surface);
+
+  const jcv_site *sites =
+      jcv_diagram_get_sites(&this->currentVoronoiRepresentation);
+
+  double colorMax = this->currentVoronoiRepresentation.numsites;
+
+  for (int s = 0; s < this->currentVoronoiRepresentation.numsites; s++) {
+    const jcv_site *site = &sites[s];
+
+    cr->set_source_rgb(s / colorMax, s / colorMax, s / colorMax);
+    cr->set_antialias(Cairo::Antialias::ANTIALIAS_NONE);
+    cr->set_line_width(0);
+
+    const jcv_graphedge *e = site->edges;
+    cr->move_to(e->pos[0].x, e->pos[0].y);
+    e = e->next;
+
+    while (e) {
+      cr->line_to(e->pos[0].x, e->pos[0].y);
+      e = e->next;
+    }
+
+    cr->close_path();
+    cr->fill();
   }
 
-  cr->show_page();
+  // auto nearestFilter = Cairo::SurfacePattern::create(surface);
+  // nearestFilter->set_filter(Cairo::Filter::FILTER_BEST);
+  // cr->set_source(nearestFilter);
+  // cr->mask(nearestFilter);
+
+  surface->write_to_png("stage_2.png");
+
+  auto byteData = surface->get_data();
+  int maxCells = surface->get_width() * surface->get_height() * 4;
+  int stride = surface->get_stride();
+
+  int by = 0;
+  int row = 0;
+
+  this->currentWorld = std::vector<std::vector<WorldCell>>(
+      this->size, std::vector<WorldCell>(this->size));
+
+  while (by < maxCells) {
+    int currentX = (by - row * stride) / 4;
+    int currentY = row;
+
+    this->currentWorld[currentX][currentY] = byteData[by];
+
+    by += 4;
+
+    if (by % stride == 0) {
+      row++;
+    }
+  }
+}
+
+void WorldGenerator::blurEdges() {
+  WorldMap newMap(this->size, std::vector<WorldCell>(this->size));
+
+  std::vector<std::vector<std::pair<double, double>>> noiseMap(
+      this->size, std::vector<std::pair<double, double>>(this->size));
+
+  std::vector<std::vector<std::pair<int, int>>> displacementMap(
+      this->size, std::vector<std::pair<int, int>>(this->size));
+
+  SimplexNoise noiseGenerator = SimplexNoise();
+  double resolution = 32;
+  double scale = (double)this->size / resolution;
+
+  for (std::size_t i = 0; i < displacementMap.size(); i++) {
+    for (std::size_t j = 0; j < displacementMap[i].size(); j++) {
+      displacementMap[i][j] = std::pair<int, int>(
+          clip(i + this->edgeDisplacement *
+                       noiseGenerator.fractal(this->perlinOctaves,
+                                              (i + 0.1) / scale, j / scale,
+                                              1),
+               0, this->size - 1),
+          clip(j + this->edgeDisplacement *
+                       noiseGenerator.fractal(this->perlinOctaves,
+                                              (i + 0.1) / scale, j / scale,
+                                              0.5),
+               0, this->size - 1));
+    }
+  }
+
+  for (std::size_t x = 0; x < displacementMap.size(); x++) {
+    for (std::size_t y = 0; y < displacementMap[x].size(); y++) {
+      // printf("x: %d, y: %d\n", x, y);
+      newMap[x][y] =
+          this->currentWorld[displacementMap[x][y].first][displacementMap[x][y].second];
+    }
+  }
+
+  this->currentWorld = std::move(newMap);
+}
+
+void WorldGenerator::generateWorldImage(std::string outputPath) {
+  unsigned int width = this->size;
+
+  auto surface =
+      Cairo::ImageSurface::create(Cairo::Format::FORMAT_RGB24, width, width);
+  auto cr = Cairo::Context::create(surface);
+
+  auto rows = this->currentWorld.size();
+  auto cols = rows;
+
+  for (int row = 0; row < rows; row++) {
+    for (int col = 0; col < cols; col++) {
+      double value = (double)this->currentWorld[row][col] / 255.0;
+      cr->set_source_rgb(value, value, value);
+      cr->rectangle(row, col, 1, 1);
+      cr->fill();
+    }
+  }
+
+  surface->write_to_png(outputPath);
 }

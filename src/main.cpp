@@ -37,16 +37,16 @@ int main(int argc, char **argv) {
   unsigned int relaxations = result["r"].as<unsigned int>();
 
   spdlog::debug("Starting world generator...");
-  WorldGenerator generator(seed, edgeLength, biomes, relaxations);
+  WorldGenerator generator;
   spdlog::debug("World generator started.");
 
   spdlog::info("Generating world...");
-  worldCell *world = generator.generateWorld();
+  WorldMap *world = generator.generateWorld();
   spdlog::info("World generated.");
 
-  spdlog::info("Generating world image...");
-  generator.generateWorldImage("output.svg");
-  spdlog::info("World image generated.");
+  // spdlog::info("Generating world image...");
+  // generator.generateWorldImage("output.svg");
+  // spdlog::info("World image generated.");
 
   return EXIT_SUCCESS;
 }
