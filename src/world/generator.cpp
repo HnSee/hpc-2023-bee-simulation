@@ -7,8 +7,10 @@
 #include <cairomm/context.h>
 #include <cairomm/surface.h>
 #include <cstring>
+#include <random>
 #include <spdlog/spdlog.h>
 #include <sstream>
+#include <unordered_map>
 
 float clip(float n, float lower, float upper) {
   return std::max(lower, std::min(n, upper));
@@ -45,6 +47,8 @@ WorldMap *WorldGenerator::generateWorld() {
   this->generateWorldImage("stage_3.png");
   this->blurEdges();
   this->generateWorldImage("stage_4.png");
+  this->assignBiomes();
+  this->generateWorldImageWithBiomeColor("stage_5.png");
 
   return &this->currentWorld;
 }
@@ -209,8 +213,7 @@ void WorldGenerator::blurEdges() {
       displacementMap[i][j] = std::pair<int, int>(
           clip(i + this->edgeDisplacement *
                        noiseGenerator.fractal(this->perlinOctaves,
-                                              (i + 0.1) / scale, j / scale,
-                                              1),
+                                              (i + 0.1) / scale, j / scale, 1),
                0, this->size - 1),
           clip(j + this->edgeDisplacement *
                        noiseGenerator.fractal(this->perlinOctaves,
@@ -222,13 +225,40 @@ void WorldGenerator::blurEdges() {
 
   for (std::size_t x = 0; x < displacementMap.size(); x++) {
     for (std::size_t y = 0; y < displacementMap[x].size(); y++) {
-      // printf("x: %d, y: %d\n", x, y);
-      newMap[x][y] =
-          this->currentWorld[displacementMap[x][y].first][displacementMap[x][y].second];
+      newMap[x][y] = this->currentWorld[displacementMap[x][y].first]
+                                       [displacementMap[x][y].second];
     }
   }
 
   this->currentWorld = std::move(newMap);
+}
+
+void WorldGenerator::assignBiomes() {
+  std::unordered_map<unsigned char, Biome> biomeMap;
+
+  std::size_t biomeCount = this->biomeProbabilities.size();
+  std::vector<Biome> biomeDistributionKeys;
+  std::vector<float> biomeDistributionProbability;
+
+  for (auto const &bd : this->biomeProbabilities) {
+    biomeDistributionKeys.push_back(bd.first);
+    biomeDistributionProbability.push_back(bd.second);
+  }
+
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::discrete_distribution<> biomeDistribution(
+      biomeDistributionProbability.begin(), biomeDistributionProbability.end());
+
+  // Collect biome representations
+  for (std::size_t x = 0; x < this->size; x++) {
+    for (std::size_t y = 0; y < this->size; y++) {
+      unsigned char cellValue = this->currentWorld[x][y];
+      auto biome = biomeMap.insert(std::pair<unsigned char, Biome>(
+          cellValue, Biome(biomeDistribution(gen) % biomeCount)));
+      this->currentWorld[x][y] = (WorldCell)biome.first->second;
+    }
+  }
 }
 
 void WorldGenerator::generateWorldImage(std::string outputPath) {
@@ -241,10 +271,33 @@ void WorldGenerator::generateWorldImage(std::string outputPath) {
   auto rows = this->currentWorld.size();
   auto cols = rows;
 
-  for (int row = 0; row < rows; row++) {
-    for (int col = 0; col < cols; col++) {
+  for (std::size_t row = 0; row < rows; row++) {
+    for (std::size_t col = 0; col < cols; col++) {
       double value = (double)this->currentWorld[row][col] / 255.0;
       cr->set_source_rgb(value, value, value);
+      cr->rectangle(row, col, 1, 1);
+      cr->fill();
+    }
+  }
+
+  surface->write_to_png(outputPath);
+}
+
+void WorldGenerator::generateWorldImageWithBiomeColor(std::string outputPath) {
+  unsigned int width = this->size;
+
+  auto surface =
+      Cairo::ImageSurface::create(Cairo::Format::FORMAT_RGB24, width, width);
+  auto cr = Cairo::Context::create(surface);
+
+  auto rows = this->currentWorld.size();
+  auto cols = rows;
+
+  for (std::size_t row = 0; row < rows; row++) {
+    for (std::size_t col = 0; col < cols; col++) {
+      Biome value = Biome(this->currentWorld[row][col]);
+      Color color = this->biomeColors[value];
+      cr->set_source_rgb(color[0], color[1], color[2]);
       cr->rectangle(row, col, 1, 1);
       cr->fill();
     }
