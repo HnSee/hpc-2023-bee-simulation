@@ -22,6 +22,9 @@ cxxopts_dep = cxxopts.get_variable('cxxopts_dep')
 
 cairo_dep = dependency('cairomm-1.0')
 
+benchmarking = subproject('google-benchmark')
+benchmarking_dep = benchmarking.get_variable('google_benchmark_dep')
+
 exe = executable(
   'bee_simulation',
   sources: src,
@@ -29,4 +32,16 @@ exe = executable(
   install: true
 )
 
-# test('basic', exe)
+bm_multikey_matrix = executable(
+  'bm_multikey_matrix',
+  sources: [
+    'benchmarks/multikey_matrix.cpp'
+  ],
+  dependencies: [benchmarking_dep]
+)
+
+benchmark(
+  'multikey_matrix',
+  bm_multikey_matrix,
+  verbose: true
+)
