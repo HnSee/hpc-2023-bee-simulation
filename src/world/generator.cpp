@@ -41,16 +41,27 @@ WorldMap *WorldGenerator::generateWorld() {
   this->currentZoom = this->initialZoom;
   srand(this->seed);
 
+  spdlog::debug("Generating voronoi representation of biomes...");
   this->generateVoronoiRepresentation();
   this->generateVoronoiSVG("stage_1.svg");
+  spdlog::debug("Voronoi representation of biomes generated.");
+
+  spdlog::debug("Rasterizing voronoi representation...");
   this->rasterizeVoronoiRepresentation();
-  this->generateWorldImage("stage_3.png");
+  this->generateBiomeRegionImage("stage_3.png");
+  spdlog::debug("Voronoi representation rasterized.");
+
+  spdlog::debug("Blurring edges...");
   this->blurEdges();
-  this->generateWorldImage("stage_4.png");
+  this->generateBiomeRegionImage("stage_4.png");
+  spdlog::debug("Edges blurred.");
+
+  spdlog::debug("Assigning biomes to regions...");
   this->assignBiomes();
   this->generateWorldImageWithBiomeColor("stage_5.png");
+  spdlog::debug("Biomes assigned.");
 
-  return &this->currentWorld;
+  return &this->currentWorldMap;
 }
 
 void WorldGenerator::generateVoronoiRepresentation() {
@@ -178,14 +189,15 @@ void WorldGenerator::rasterizeVoronoiRepresentation() {
   int by = 0;
   int row = 0;
 
-  this->currentWorld = std::vector<std::vector<WorldCell>>(
-      this->size, std::vector<WorldCell>(this->size));
+  this->currentWorldBiomeRegions =
+      std::vector<std::vector<BiomeRegionIdentifier>>(
+          this->size, std::vector<BiomeRegionIdentifier>(this->size));
 
   while (by < maxCells) {
     int currentX = (by - row * stride) / 4;
     int currentY = row;
 
-    this->currentWorld[currentX][currentY] = byteData[by];
+    this->currentWorldBiomeRegions[currentX][currentY] = byteData[by];
 
     by += 4;
 
@@ -196,7 +208,8 @@ void WorldGenerator::rasterizeVoronoiRepresentation() {
 }
 
 void WorldGenerator::blurEdges() {
-  WorldMap newMap(this->size, std::vector<WorldCell>(this->size));
+  std::vector<std::vector<BiomeRegionIdentifier>> newMap(
+      this->size, std::vector<BiomeRegionIdentifier>(this->size));
 
   std::vector<std::vector<std::pair<double, double>>> noiseMap(
       this->size, std::vector<std::pair<double, double>>(this->size));
@@ -225,16 +238,23 @@ void WorldGenerator::blurEdges() {
 
   for (std::size_t x = 0; x < displacementMap.size(); x++) {
     for (std::size_t y = 0; y < displacementMap[x].size(); y++) {
-      newMap[x][y] = this->currentWorld[displacementMap[x][y].first]
-                                       [displacementMap[x][y].second];
+      newMap[x][y] =
+          this->currentWorldBiomeRegions[displacementMap[x][y].first]
+                                        [displacementMap[x][y].second];
     }
   }
 
-  this->currentWorld = std::move(newMap);
+  this->currentWorldBiomeRegions = std::move(newMap);
+}
+
+void WorldGenerator::freeBiomeRegions() {
+  this->currentWorldBiomeRegions.clear();
+  this->currentWorldBiomeRegions.shrink_to_fit();
 }
 
 void WorldGenerator::assignBiomes() {
-  std::unordered_map<unsigned char, Biome> biomeMap;
+  this->currentWorldMap.resize(this->size, std::vector<WorldCell>(this->size));
+  std::unordered_map<BiomeRegionIdentifier, Biome> biomeMap;
 
   std::size_t biomeCount = this->biomeProbabilities.size();
   std::vector<Biome> biomeDistributionKeys;
@@ -253,27 +273,27 @@ void WorldGenerator::assignBiomes() {
   // Collect biome representations
   for (std::size_t x = 0; x < this->size; x++) {
     for (std::size_t y = 0; y < this->size; y++) {
-      unsigned char cellValue = this->currentWorld[x][y];
-      auto biome = biomeMap.insert(std::pair<unsigned char, Biome>(
+      BiomeRegionIdentifier cellValue = this->currentWorldBiomeRegions[x][y];
+      auto biome = biomeMap.insert(std::pair<BiomeRegionIdentifier, Biome>(
           cellValue, Biome(biomeDistribution(gen) % biomeCount)));
-      this->currentWorld[x][y] = (WorldCell)biome.first->second;
+      this->currentWorldMap[x][y] = (WorldCell)biome.first->second;
     }
   }
 }
 
-void WorldGenerator::generateWorldImage(std::string outputPath) {
+void WorldGenerator::generateBiomeRegionImage(std::string outputPath) {
   unsigned int width = this->size;
 
   auto surface =
       Cairo::ImageSurface::create(Cairo::Format::FORMAT_RGB24, width, width);
   auto cr = Cairo::Context::create(surface);
 
-  auto rows = this->currentWorld.size();
+  auto rows = this->currentWorldBiomeRegions.size();
   auto cols = rows;
 
   for (std::size_t row = 0; row < rows; row++) {
     for (std::size_t col = 0; col < cols; col++) {
-      double value = (double)this->currentWorld[row][col] / 255.0;
+      double value = (double)this->currentWorldBiomeRegions[row][col] / 255.0;
       cr->set_source_rgb(value, value, value);
       cr->rectangle(row, col, 1, 1);
       cr->fill();
@@ -290,12 +310,12 @@ void WorldGenerator::generateWorldImageWithBiomeColor(std::string outputPath) {
       Cairo::ImageSurface::create(Cairo::Format::FORMAT_RGB24, width, width);
   auto cr = Cairo::Context::create(surface);
 
-  auto rows = this->currentWorld.size();
+  auto rows = this->currentWorldMap.size();
   auto cols = rows;
 
   for (std::size_t row = 0; row < rows; row++) {
     for (std::size_t col = 0; col < cols; col++) {
-      Biome value = Biome(this->currentWorld[row][col]);
+      Biome value = Biome(this->currentWorldMap[row][col]);
       Color color = this->biomeColors[value];
       cr->set_source_rgb(color[0], color[1], color[2]);
       cr->rectangle(row, col, 1, 1);

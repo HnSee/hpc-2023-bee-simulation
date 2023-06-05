@@ -8,13 +8,14 @@
 #include <unordered_map>
 #include <vector>
 
-typedef unsigned char WorldCell;
+enum Biome { Field, Meadow, City, Waters, Forest };
+
+typedef Biome WorldCell;
 
 // Unit is 1x1 Cell is 1m x 1m
 typedef std::vector<std::vector<WorldCell>> WorldMap;
 
-enum Biome { Field, Meadow, City, Waters, Forest };
-
+typedef unsigned char BiomeRegionIdentifier;
 typedef std::array<double, 3> Color;
 
 class WorldGenerator {
@@ -49,15 +50,17 @@ private:
 
   // Per generation variables
   jcv_diagram currentVoronoiRepresentation;
-  WorldMap currentWorld;
+  std::vector<std::vector<unsigned char>> currentWorldBiomeRegions;
+  WorldMap currentWorldMap;
   unsigned short currentZoom;
 
   void generateVoronoiRepresentation();
   void generateVoronoiSVG(std::string outputPath);
   void rasterizeVoronoiRepresentation();
   void blurEdges();
+  void freeBiomeRegions();
   void assignBiomes();
-  void generateWorldImage(std::string outputPath);
+  void generateBiomeRegionImage(std::string outputPath);
   void generateWorldImageWithBiomeColor(std::string outputPath);
 };
 
