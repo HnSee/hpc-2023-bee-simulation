@@ -25,6 +25,8 @@ cairo_dep = dependency('cairomm-1.0')
 benchmarking = subproject('google-benchmark')
 benchmarking_dep = benchmarking.get_variable('google_benchmark_dep')
 
+omp_dep = dependency('openmp')
+
 exe = executable(
   'bee_simulation',
   sources: src,
@@ -37,7 +39,7 @@ bm_multikey_matrix = executable(
   sources: [
     'benchmarks/multikey_matrix.cpp'
   ],
-  dependencies: [benchmarking_dep]
+  dependencies: [benchmarking_dep, omp_dep]
 )
 
 benchmark(
