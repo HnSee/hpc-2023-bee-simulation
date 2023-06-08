@@ -27,17 +27,53 @@ public:
   void set(Coordinates c, T v) {
     TDataIterator result = this->data.insert(std::make_pair(c, v));
 
-    std::pair<Coordinate, T *> newXIndex = std::make_pair(c.first, &(*result).second);
-    std::pair<Coordinate, T *> newYIndex = std::make_pair(c.second, &(*result).second);
+    std::pair<Coordinate, T *> newXIndex =
+        std::make_pair(c.first, &(*result).second);
+    std::pair<Coordinate, T *> newYIndex =
+        std::make_pair(c.second, &(*result).second);
 
     this->xIndex.insert(newXIndex);
     this->yIndex.insert(newYIndex);
   }
 
-  void remove(Coordinates c, T v) {
-    // TODO
-    for (auto it = this->data.find(c); it != this->data.end(); it++) {
+  bool remove(Coordinates c, T v) {
+    auto coordinateEntities = this->data.equal_range(c);
+    auto it = coordinateEntities.first;
+
+    bool foundInData = false;
+    bool foundInXIndex = false;
+    bool foundInYIndex = false;
+
+    for (; it != coordinateEntities.second; ++it) {
+      if (it->second == v) {
+        this->data.erase(it);
+        foundInData = true;
+
+        auto xIndexCoordinates = this->xIndex.equal_range(c.first);
+        auto xIt = xIndexCoordinates.first;
+        for (; xIt != xIndexCoordinates.second; ++xIt) {
+          if (xIt->second == &(it->second)) {
+            this->xIndex.erase(xIt);
+            foundInXIndex = true;
+            break;
+          }
+        }
+
+        auto yIndexCoordinates = this->yIndex.equal_range(c.second);
+        auto yIt = yIndexCoordinates.first;
+        for (; yIt != yIndexCoordinates.second; ++yIt) {
+          if (yIt->second == &(it->second)) {
+            this->yIndex.erase(yIt);
+            foundInYIndex = true;
+            break;
+          }
+        }
+
+        break;
+      }
     }
+
+    return foundInData && foundInXIndex && foundInYIndex;
   }
 
   std::pair<TCoordinateIterator, TCoordinateIterator> getByX(Coordinate x) {
