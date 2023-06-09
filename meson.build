@@ -11,7 +11,10 @@ project(
 src = [
   'src/main.cpp',
   'src/world/generator.cpp',
-  'src/extern/simplex/SimplexNoise.cpp'
+  'src/world/worldstate.cpp',
+  'src/agents/agent.cpp',
+  'src/extern/simplex/SimplexNoise.cpp',
+  'src/extern/kdtree/kdtree.cpp'
 ]
 
 spdlog = subproject('spdlog')
@@ -32,16 +35,18 @@ exe = executable(
   install: true
 )
 
-bm_multikey_matrix = executable(
-  'bm_multikey_matrix',
+bm_worldmap = executable(
+  'bm_worldmap',
   sources: [
-    'benchmarks/multikey_matrix.cpp'
+    'benchmarks/worldmap.cpp'
   ],
   dependencies: [benchmarking_dep]
 )
 
 benchmark(
-  'multikey_matrix',
-  bm_multikey_matrix,
-  verbose: true
+  'worldmap',
+  bm_worldmap,
+  verbose: true,
+  timeout: 900,
+  args: '--benchmark_out=results_worldmap.json'
 )
