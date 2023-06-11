@@ -48,7 +48,8 @@ test_two_d_tree = executable(
 
 test(
   'two_d_tree',
-  test_two_d_tree
+  test_two_d_tree,
+  args: '--gtest_color=yes'
 )
 
 bm_worldmap = executable(

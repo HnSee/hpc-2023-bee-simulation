@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <memory>
 #include <random>
 #include <sstream>
 #include <string>
@@ -12,39 +13,63 @@
 
 enum Axis { X, Y };
 
-template <typename C> using Coordinates = std::pair<C, C>;
-template <typename C, typename V>
-using CoordinatesValue = std::pair<Coordinates<C>, V>;
+template <typename C> struct Coordinates {
+  C x;
+  C y;
 
-template <typename C>
-void calculateEuclideanDistance(const Coordinates<C> &point1,
-                                const Coordinates<C> &point2) {
-  return std::sqrt(std::pow(point2.first - point1.first, 2) +
-                   std::pow(point2.second - point1.second, 2));
-}
+  double getDistanceTo(const Coordinates<C> &c) const {
+    return calculateEuclideanDistance(*this, c);
+  }
+
+  static double calculateEuclideanDistance(const Coordinates<C> &point1,
+                                           const Coordinates<C> &point2) {
+    return std::sqrt(std::pow(point2.x - point1.x, 2) +
+                     std::pow(point2.y - point1.y, 2));
+  }
+};
+
+template <typename C, typename V> struct CoordinatesValue {
+  Coordinates<C> point;
+  std::unique_ptr<V> value;
+
+  CoordinatesValue(C x, C y, V value) {
+    this->point.x = x;
+    this->point.y = y;
+    this->value = std::make_unique<V>(value);
+  }
+};
+
+template <typename C, typename V> struct NearestResult {
+  const Coordinates<C> point;
+  const V &value;
+  const double distance;
+  const int visited;
+};
 
 template <typename C, typename V> class TwoDTree {
 
 private:
   struct Node {
     Coordinates<C> point;
-    V value;
+    std::unique_ptr<V> value;
     Node *left;
     Node *right;
 
-    Node(const Coordinates<C> &point, const V &value)
-        : point(point), value(value), left(nullptr), right(nullptr) {}
+    Node(const Coordinates<C> &point, std::unique_ptr<V> value)
+        : point(point), value(std::move(value)), left(nullptr), right(nullptr) {
+    }
 
-    Node(const CoordinatesValue<C, V> &cv)
-        : point(cv.first), value(cv.second), left(nullptr), right(nullptr) {}
+    Node(CoordinatesValue<C, V> &cv)
+        : point(cv.point), value(std::move(cv.value)), left(nullptr),
+          right(nullptr) {}
 
-    C getDistanceTo(const Coordinates<C> &point) const {
-      return calculateEuclideanDistance(this->point, point);
+    double getDistanceTo(const Coordinates<C> &point) const {
+      return this->point.getDistanceTo(point);
     }
 
     friend std::ostream &operator<<(std::ostream &output, const Node &n) {
-      output << "(" << n.point.first << "|" << n.point.second << ") {"
-             << n.value << "}";
+      output << "(" << n.point.x << "|" << n.point.y << ") {" << *(n.value)
+             << "}";
       return output;
     }
   };
@@ -57,10 +82,10 @@ private:
     bool operator()(const Node &node1, const Node &node2) const {
       switch (this->axis) {
       case X:
-        return node1.point.first < node2.point.first;
+        return node1.point.x < node2.point.x;
         break;
       case Y:
-        return node1.point.second < node2.point.second;
+        return node1.point.y < node2.point.y;
         break;
       }
 
@@ -117,9 +142,9 @@ private:
 
     double difference;
     if (axis == Axis::X) {
-      difference = (double)currentNode->point.first - (double)point.first;
+      difference = (double)currentNode->point.x - (double)point.x;
     } else {
-      difference = (double)currentNode->point.second - (double)point.second;
+      difference = (double)currentNode->point.y - (double)point.y;
     }
 
     axis = axis == Axis::X ? Axis::Y : Axis::X;
@@ -164,7 +189,7 @@ public:
 
   // double distance() const { return sqrt(smallestDistance); }
 
-  CoordinatesValue<C, V> *nearest(const Coordinates<C> &point) {
+  NearestResult<C, V> *nearest(const Coordinates<C> &point) {
     if (root == nullptr) {
       return nullptr;
     }
@@ -173,8 +198,9 @@ public:
     this->currentVisited = 0;
     this->currentSmallestDistance = 0;
     this->calculateNearest(this->root, point, Axis::X);
-    return std::make_pair(this->currentNearestNode->point,
-                          this->currentNearestNode->value);
+    return new NearestResult<C, V>{
+        this->currentNearestNode->point, *(this->currentNearestNode->value),
+        this->currentSmallestDistance, this->currentVisited};
   }
 
   std::string toDot() {
