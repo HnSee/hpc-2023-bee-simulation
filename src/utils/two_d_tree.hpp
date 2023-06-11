@@ -185,10 +185,6 @@ public:
 
   std::size_t height() { return this->calculateHeight(this->root); }
 
-  // int visited() const { return numberOfVisited; }
-
-  // double distance() const { return sqrt(smallestDistance); }
-
   NearestResult<C, V> *nearest(const Coordinates<C> &point) {
     if (root == nullptr) {
       return nullptr;
