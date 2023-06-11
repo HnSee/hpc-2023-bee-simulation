@@ -52,17 +52,17 @@ test(
   args: '--gtest_color=yes'
 )
 
-bm_worldmap = executable(
-  'bm_worldmap',
+bm_two_d_tree = executable(
+  'bm_two_d_tree',
   sources: [
-    'benchmarks/worldmap.cpp'
+    'benchmarks/two_d_tree.cpp'
   ],
   dependencies: [benchmarking_dep]
 )
 
 benchmark(
-  'worldmap',
-  bm_worldmap,
+  'two_d_tree',
+  bm_two_d_tree,
   verbose: true,
   timeout: 900,
   args: '--benchmark_out=results_worldmap.json'
