@@ -1,17 +1,17 @@
 #ifndef BEESIMULATION_WORLD_WORLDSTATE_H
 #define BEESIMULATION_WORLD_WORLDSTATE_H
 
-#include "../extern/kdtree/kdtree.hpp"
+#include "../utils/two_d_tree.hpp"
 #include "generator.hpp"
 #include <memory>
 
 class WorldState {
 public:
-  WorldState(std::unique_ptr<WorldMap> map);
+  WorldState(WorldMap map);
 
 private:
-  Kdtree::KdTree agents;
-  std::unique_ptr<WorldMap> map;
-}
+  TwoDTree<double, double> agents;
+  WorldMap map;
+};
 
 #endif

@@ -10,11 +10,10 @@ project(
 
 src = [
   'src/main.cpp',
+  'src/agents/agent.cpp',
   'src/world/generator.cpp',
   'src/world/worldstate.cpp',
-  'src/agents/agent.cpp',
-  'src/extern/simplex/SimplexNoise.cpp',
-  'src/extern/kdtree/kdtree.cpp'
+  'src/extern/simplex/SimplexNoise.cpp'
 ]
 
 spdlog = subproject('spdlog')
@@ -28,11 +27,28 @@ cairo_dep = dependency('cairomm-1.0')
 benchmarking = subproject('google-benchmark')
 benchmarking_dep = benchmarking.get_variable('google_benchmark_dep')
 
+gtest = subproject('gtest')
+gtest_dep = gtest.get_variable('gtest_dep')
+gtest_main_dep = gtest.get_variable('gtest_main_dep')
+
 exe = executable(
   'bee_simulation',
   sources: src,
   dependencies: [spdlog_dep, cxxopts_dep, cairo_dep],
   install: true
+)
+
+test_two_d_tree = executable(
+  'two_d_tree',
+  sources: [
+    'tests/test_two_d_tree.cpp'
+  ],
+  dependencies: [gtest_dep, gtest_main_dep]
+)
+
+test(
+  'two_d_tree',
+  test_two_d_tree
 )
 
 bm_worldmap = executable(

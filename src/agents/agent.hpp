@@ -9,8 +9,6 @@ class Agent {
 public:
   Agent(AgentId id);
   AgentId getId();
-
-  void
 };
 
 #endif
