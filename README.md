@@ -20,6 +20,7 @@ Further smaller dependencies will be automatically downloaded by meson and inclu
 Some simple libraries or implementations have been transferred directly into this repository and can be found under `src/extern/`:
 - [jc_voronoi](https://github.com/JCash/voronoi) (Fortune's sweep algorithm implementation used in world generation steps)
 - [Perlin Simplex Noise C++ Implementation](https://github.com/SRombauts/SimplexNoise) (Perlin's Simplex noise implementation used in world generation steps)
+- [boost's `hash_combine`](https://www.boost.org/doc/libs/1_35_0/doc/html/boost/hash_combine_id241013.html) (hashing algorithm for multiple values)
 
 ## Building
 Building the application uses [Meson](https://mesonbuild.com/) and is therefore very simple. The process consists of two steps.
