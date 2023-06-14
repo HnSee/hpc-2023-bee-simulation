@@ -5,127 +5,24 @@
 #include "basic.cpp"
 #include "var.cpp"
 
+int scout = 0;
+int worker = 0;
+
 // place where the hive stores the food
 class hive_bee_access{
     public:
+        // how much food the hive has
         int foodstore;
-        
-        void addfood(int x){
-            foodstore += x;
-        }
-};
-
-// bee needs pointer to the hive it belongs to
-class bee: public agent{
-    public:
-        // hiveptr
-        hivefoodstorage* hstore;
-
-        // wether the bee is flying to the destination or the hive
-        bool searching;
-
-        // whether or not the bee is a scout
-        bool worker;
-
-        // food the bee is carrying
-        int food;
-        
-        // position of the hive
-        position<double> hivepos;
-        
-        // position send to
-        position<double> destination;
-
-        void init(position<double> pos, position<double> hive, position<double> destination, bool searching, bool worker, hivefoodstorage* hstore){
-            this->pos = pos;
-            this->hivepos = hivepos;
-            this->destination = destination;
-            this->searching = searching;
-            this->worker = worker;
-            this->hstore = hstore;
-            hstore->foodstore = 0;
-        }
-        
-        void move(){
-            if( worker ){
-                if( searching ){
-                    pos = getmovementvector(pos, destination);
-                    if( pos.x == destination.x && pos.y == destination.y){
-                        // grab food
-                        searching = false;
-                    }
-                }
-                else{
-                    pos = getmovementvector(pos, hivepos);
-
-                    if( pos.x == hivepos.x && pos.y == hivepos.y ){
-                        //std::cout << "returned to hive\n";
-                        nuke();
-                    }
-                    
-                }
-            }
-            else{
-                if( searching ){
-                    pos = getmovementvector(pos, destination);
-                    // check if food is near
-                    // if food is near, store position in destination,
-                    // if scout reaches destination and doesnt find anything then the scout either generates next location or returns
-                    if( pos.x == destination.x && pos.y == destination.y ){
-                        if( scoutindurance > std::rand()%101 ){
-                            destination.x += (std::rand()%2000) - 1000;
-                            destination.y += (std::rand()%2000) - 1000;
-                        }
-                        else{
-                            searching = false;
-                        }
-                    }
-                }
-                else{
-                    pos = getmovementvector(pos, hivepos);
-                    if( pos.x == hivepos.x && pos.y == hivepos.y ){
-                        hstore->addfood(10);   
-                        nuke();
-                    }
-                }
-            }
-        }
-
-        void update(){
-            return;
-        }
-
-        std::string gettype(){
-            std::string ret = "bee";
-            return ret;
-        }
-
-        void nuke(){
-            //std::cout << "removed bee\n";
-            removeagent = true;
-            delete this;
-        }
-};
-
-class hive: public agent{
-    public:
-        // place where the food is stored
-        hive_bee_access* hstore;    
-
-        // access to the datastructure to spawn bees into  
-        std::vector<agent*> *ds;
-        
-        // what time of the day it is
-        int tickoftheday;
-        
-        // all the bees belonging to the hive
-        int totalbees;
-        
-        // all the bees with no tasks
-        int activebees;
 
         // random access foodsources (maybe change that into kde tree)
         std::vector< position<double> > foodsources;
+
+        // all the bees with no tasks
+        int activebees;
+        
+        void addfood(int x){
+            foodstore = foodstore + x;
+        }
 
         // adds foodsource
         void add_fs(position<double> p){
@@ -159,13 +56,121 @@ class hive: public agent{
             return foodsources.at(r);
 
         }
+};
+
+class bee: public agent{
+    public:
+        // hiveptr
+        hive_bee_access* hstore;
+
+        // wether the bee is flying to the destination or the hive
+        bool searching;
+
+        // whether or not the bee is a scout
+        bool worker;
+
+        // food the bee is carrying
+        int food;
+        
+        // position of the hive
+        position<double> hivepos;
+        
+        // position send to
+        position<double> destination;
+
+        void init(position<double> pos, position<double> hive, position<double> destination, bool searching, bool worker, hive_bee_access* hstore){
+            this->pos = pos;
+            this->hivepos = hivepos;
+            this->destination = destination;
+            this->searching = searching;
+            this->worker = worker;
+            this->hstore = hstore;
+            hstore->foodstore = 0;
+        }
+        
+        void move(){
+            if( worker ){
+                if( searching ){
+                    pos = getmovementvector(pos, destination);
+                    if( pos.x == destination.x && pos.y == destination.y){
+                        food = 1;
+                        searching = false;
+                    }
+                }
+                else{
+                    pos = getmovementvector(pos, hivepos);
+
+                    if( pos.x == hivepos.x && pos.y == hivepos.y ){
+                        hstore->addfood(food);
+                        nuke();
+                    }
+                    
+                }
+            }
+            else{
+                if( searching ){
+                    pos = getmovementvector(pos, destination);
+                    // check if food is near
+                    // if food is near, store position in destination,
+                    // if scout reaches destination and doesnt find anything then the scout either generates next location or returns
+                    if( pos.x == destination.x && pos.y == destination.y ){
+                        if( scoutindurance > std::rand()%101 ){
+                            destination.x += (std::rand()%2000) - 1000;
+                            destination.y += (std::rand()%2000) - 1000;
+                        }
+                        else{
+                            searching = false;
+                        }
+                    }
+                }
+                else{
+                    pos = getmovementvector(pos, hivepos);
+                    if( pos.x == hivepos.x && pos.y == hivepos.y ){
+                        hstore->add_fs(destination);
+                        nuke();
+                    }
+                }
+            }
+        }
+
+        void update(){
+            return;
+        }
+
+        std::string gettype(){
+            std::string ret = "bee";
+            return ret;
+        }
+
+        void nuke(){
+            //std::cout << "removed bee\n";
+            hstore->activebees -= 1;
+            removeagent = true;
+            delete this;
+        }
+};
+
+class hive: public agent{
+    public:
+        // place where the food is stored
+        hive_bee_access* hstore;    
+
+        // access to the datastructure to spawn bees into  
+        std::vector<agent*> *ds;
+        
+        // what time of the day it is
+        int tickoftheday;
+        
+        // all the bees belonging to the hive
+        int totalbees;
 
         void init(int totalbees, std::vector<agent*> *ds, hive_bee_access* hstore){
             tickoftheday = 0;
             this->totalbees = totalbees;
             this->ds = ds;
             this->hstore = hstore;
-            this->activebees = 0;
+            this->hstore->activebees = 0;
+            this->hstore->foodstore = 0;
         }
         
         void move(){
@@ -181,25 +186,30 @@ class hive: public agent{
             double x = (double)tickoftheday/daylength;
             int release = totalbees * (-3 * (x-0.5) * (x-0.5) + 1);
 
-            for(int k = 0; release > activebees; k++){
+            for(int k = 0; release > hstore->activebees; k++){
                 //release bees
                 // calc the percentage the bee is a scout
-                double scoutpercentage = (double)( totalbees - foodsources.size() * 100 ) / totalbees;
+                int beespersource = 100;
+                double scoutpercentage = ( (double) totalbees - hstore->foodsources.size() * beespersource ) / totalbees;
                 double t = (double)( std::rand() %10000 ) /10000;
 
-                if( t < scoutpercentage ){
+                if( ( totalbees - hstore->foodsources.size() > 0 && t < scoutpercentage ) || hstore->foodsources.size() == 0){
+                    //std::cout << "Scout: " << scoutpercentage << "  " << t << "\n";
+                    scout += 1;
                     bee* b = new bee;
                     b->init(position<double>{pos.x,pos.y}, position<double>{pos.x,pos.y}, position<double>{pos.x,pos.y}, true, false, hstore);
                     ds->push_back(b);
                 }
                 else{
+                    //std::cout << "Worker: " << scoutpercentage << "  " << t << "\n";
+                    worker += 1;
                     bee* b = new bee;
-                    b->init(position<double>{pos.x,pos.y}, position<double>{pos.x,pos.y}, rand_fs(), true, true, hstore);
+                    b->init(position<double>{pos.x,pos.y}, position<double>{pos.x,pos.y}, hstore->rand_fs(), true, true, hstore);
                     ds->push_back(b);
 
                 }
 
-                activebees += 1;
+                hstore->activebees += 1;
             }
             return;
         }
@@ -299,30 +309,17 @@ void tick(int j){
 // remove selfpointer
 int main(){
     std::srand(time(NULL));
-    int runtimedays = 200;
     
     hive* h = new hive;
     
     h->init(40000, &agents, new hive_bee_access);
 
-    flower* f = new flower;
-
-    for(int k = 0; k < 2000; k++){
-        double x = std::rand();
-        double y = std::rand();
-        
-        // std::cout << x << "\n";
-        // std::cout << y << "\n";
-
-        h->add_fs( {std::rand(),std::rand()} );
-    }
-
     agents.push_back(h);
-    agents.push_back(f);            
 
-    for(int x = 0; x < 1; x++){
+    for(int x = 0; x < 4; x++){
         for(int k = 0; k < daylength; k++){
            auto t = agents.size();
+           h->tickoftheday = 0;
             for(int j = 0; j < t ; j++ ){
                 tick(j);
                 t = agents.size();
@@ -330,5 +327,6 @@ int main(){
         }
     }
 
-    std::cout << h->hstore->foodstore << "\n";
+    std::cout << "Scout: " << scout << "\n";
+    std::cout << "Worker: " << worker << "\n";
 }
