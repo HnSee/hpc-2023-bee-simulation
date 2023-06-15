@@ -228,9 +228,6 @@ class hive: public agent{
 
 class flower: public agent{
     public:
-        // pointer to free the memory
-        flower* selfpointer;
-
         // how long a flower produces food closer to one -> longer blooming ( 1= blooming forever )
         double bloomlength;
 
@@ -244,12 +241,10 @@ class flower: public agent{
         double size;
 
 
-        void init(double bloomlength, double maxproduction, int peak, flower* selfpointer){
-            this->selfpointer = selfpointer;
+        void init(double bloomlength, double maxproduction, int peak){
             this->bloomlength = bloomlength;
             this->maxproduction = maxproduction;
             this->peak = peak;
-            this->selfpointer = selfpointer;
             this->size = 0;
         }
 
@@ -316,7 +311,7 @@ int main(){
 
     agents.push_back(h);
 
-    for(int x = 0; x < 4; x++){
+    for(int x = 0; x < 5; x++){
         for(int k = 0; k < daylength; k++){
            auto t = agents.size();
            h->tickoftheday = 0;
@@ -324,6 +319,7 @@ int main(){
                 tick(j);
                 t = agents.size();
             }
+            // baum aufgebaut werden
         }
     }
 
