@@ -341,3 +341,80 @@ TEST(PointTree, AddRangeDouble1) {
   EXPECT_EQ(tree.height(), 5);
   EXPECT_EQ(tree.count(), 29);
 }
+
+TEST(PointTree, RemoveLeaf) {
+  PointValue<int, int> testValues[] = {
+      pv(6, 42, 6),   pv(87, 39, 56), pv(54, 22, 62), pv(9, 14, 81),
+      pv(40, 13, 20), pv(13, 97, 87), pv(96, 22, 89), pv(21, 78, 96),
+      pv(54, 39, 89), pv(2, 45, 2),   pv(51, 21, 43), pv(72, 90, 1),
+      pv(99, 80, 96), pv(80, 18, 2),  pv(58, 24, 6)};
+
+  PointTree<int, int> tree(std::begin(testValues), std::end(testValues));
+
+  EXPECT_EQ(tree.count(), 15);
+
+  PointValue<int, int> valueToRemove = pv(9, 14, 81);
+
+  std::ofstream out("remove_test.dot");
+  out << tree.toDot();
+  out.close();
+
+  tree.removeByPointValue(valueToRemove);
+
+  EXPECT_EQ(tree.count(), 14);
+}
+
+TEST(PointTree, RemoveRoot) {
+  PointValue<int, int> testValues[] = {
+      pv(6, 42, 6),   pv(87, 39, 56), pv(54, 22, 62), pv(9, 14, 81),
+      pv(40, 13, 20), pv(13, 97, 87), pv(96, 22, 89), pv(21, 78, 96),
+      pv(54, 39, 89), pv(2, 45, 2),   pv(51, 21, 43), pv(72, 90, 1),
+      pv(99, 80, 96), pv(80, 18, 2),  pv(58, 24, 6)};
+
+  PointTree<int, int> tree(std::begin(testValues), std::end(testValues));
+
+  EXPECT_EQ(tree.count(), 15);
+
+  PointValue<int, int> valueToRemove = pv(54, 22, 62);
+
+  std::ofstream out("remove_test_before.dot");
+  out << tree.toDot();
+  out.close();
+
+  tree.removeByPointValue(valueToRemove);
+
+  EXPECT_EQ(tree.count(), 14);
+
+  std::ofstream out2("remove_test_after.dot");
+  out2 << tree.toDot();
+  out2.close();
+}
+
+TEST(PointTree, RemoveNodeWithoutRightChild) {
+  PointValue<int, int> testValues[] = {
+      pv(6, 42, 6),   pv(87, 39, 56), pv(54, 22, 62), pv(9, 14, 81),
+      pv(40, 15, 20), pv(13, 97, 87), pv(96, 22, 89), pv(21, 78, 96),
+      pv(54, 39, 89), pv(2, 45, 2),   pv(51, 21, 43), pv(72, 90, 1),
+      pv(99, 80, 96), pv(80, 18, 2),  pv(58, 24, 6),  pv(58, 22, 69)};
+
+  PointTree<int, int> tree(std::begin(testValues), std::end(testValues));
+
+  EXPECT_EQ(tree.count(), 16);
+
+  PointValue<int, int> valueToAdd = pv(31, 60, 1010);
+  PointValue<int, int> valueToRemove = pv(21, 78, 96);
+
+  tree.add(valueToAdd);
+
+  std::ofstream out("remove_test_without_right_child_before.dot");
+  out << tree.toDot();
+  out.close();
+
+  tree.removeByPointValue(valueToRemove);
+
+  std::ofstream out2("remove_test_without_right_child_after.dot");
+  out2 << tree.toDot();
+  out2.close();
+
+  EXPECT_EQ(tree.count(), 16);
+}

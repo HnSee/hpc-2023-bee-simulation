@@ -79,6 +79,11 @@ private:
              << "}";
       return output;
     }
+
+    friend bool operator==(const Node &n, const PointValue<C, V> &pv) {
+      return n.point.x == pv.point.x && n.point.y == pv.point.y &&
+             *n.value == *pv.value;
+    }
   };
 
   struct PointValueCompare {
@@ -143,13 +148,13 @@ private:
     }
 
     if (axis == Axis::X) {
-      if (value.point.x < root->point.x) {
+      if (value.point.x <= root->point.x) {
         root->left = std::move(insertValue(root->left, value, Axis::Y));
       } else {
         root->right = std::move(insertValue(root->right, value, Axis::Y));
       }
     } else {
-      if (value.point.y < root->point.y) {
+      if (value.point.y <= root->point.y) {
         root->left = std::move(insertValue(root->left, value, Axis::X));
       } else {
         root->right = std::move(insertValue(root->right, value, Axis::X));
@@ -159,59 +164,99 @@ private:
     return std::move(root);
   }
 
-  std::unique_ptr<Node> &minimumPoint(std::unique_ptr<Node> &n1,
-                                      std::unique_ptr<Node> &n2,
-                                      std::unique_ptr<Node> &n3, Axis axis) {
-    std::unique_ptr<Node> &result = n1;
-    // if (axis == Axis::X) {
-    //   if (n1 && n1->point.x <) {
-    //   }
-    // }
+  Node *minimumPoint(Node *n1, Node *n2, Node *n3, Axis axis) {
+    Node *result = n1;
+
+    if (axis == Axis::X) {
+      if (n2 && n2->point.x < result->point.x) {
+        result = n2;
+      }
+      if (n3 && n3->point.x < result->point.x) {
+        result = n3;
+      }
+    } else {
+      if (n2 && n2->point.y < result->point.y) {
+        result = n2;
+      }
+      if (n3 && n3->point.y < result->point.y) {
+        result = n3;
+      }
+    }
+
+    return result;
   }
 
-  std::unique_ptr<Node> &findMinimum(std::unique_ptr<Node> &root,
-                                     Axis axisToSearch, Axis currentAxis) {
+  Node *findMinimum(Node *root, Axis axisToSearch, Axis currentAxis) {
     if (!root) {
       return nullptr;
     }
 
-    // if (axisToSearch == currentAxis) {
-    //   if (!root->left) {
-    //     return root;
-    //   } else {
-    //     return
-    //   }
-    // }
+    Axis nextAxis = currentAxis == Axis::X ? Axis::Y : Axis::X;
+
+    if (axisToSearch == currentAxis) {
+      if (!root->left) {
+        return root;
+      } else {
+        return this->findMinimum(root->left.get(), axisToSearch, nextAxis);
+      }
+    }
+
+    return minimumPoint(
+        root, this->findMinimum(root->left.get(), axisToSearch, nextAxis),
+        this->findMinimum(root->right.get(), axisToSearch, nextAxis),
+        axisToSearch);
   }
 
-  std::unique_ptr<Node> removeValue(std::unique_ptr<Node> &root,
-                                    PointValue<C, V> &value, Axis axis) {
+  std::unique_ptr<Node>
+  removeByPointValueRecursive(std::unique_ptr<Node> &root,
+                              const PointValue<C, V> &value, Axis axis) {
     if (!root) {
       return nullptr;
     }
 
-    if (root->point == value.point && root->value == value.value) {
+    Axis nextAxis = axis == Axis::X ? Axis::Y : Axis::X;
 
-      // if (root->right) {
-      //   std::unique_ptr<Node> minimum =
-      // }
+    if (*root == value) {
 
-      if (!root->left && !root->right) {
+      if (root->right) {
+        Node *minimum = this->findMinimum(root->right.get(), axis, Axis::X);
+        root->point = minimum->point;
+        root->value.swap(minimum->value);
+
+        PointValue<C, V> minimumPointValue(minimum->point, minimum->value);
+        root->right = this->removeByPointValueRecursive(
+            root->right, minimumPointValue, nextAxis);
+      } else if (root->left) {
+        Node *minimum = this->findMinimum(root->left.get(), axis, Axis::X);
+        root->point = minimum->point;
+        root->value.swap(minimum->value);
+
+        PointValue<C, V> minimumPointValue(minimum->point, minimum->value);
+        root->right = this->removeByPointValueRecursive(
+            root->left, minimumPointValue, nextAxis);
+      } else {
+        root.reset();
         return nullptr;
       }
+
+      return std::move(root);
     }
 
     if (axis == Axis::X) {
       if (value.point.x < root->point.x) {
-        root->left = std::move(insertValue(root->left, value, Axis::Y));
+        root->left =
+            this->removeByPointValueRecursive(root->left, value, nextAxis);
       } else {
-        root->right = std::move(insertValue(root->right, value, Axis::Y));
+        root->right =
+            this->removeByPointValueRecursive(root->right, value, nextAxis);
       }
     } else {
       if (value.point.y < root->point.y) {
-        root->left = std::move(insertValue(root->left, value, Axis::X));
+        root->left =
+            this->removeByPointValueRecursive(root->left, value, nextAxis);
       } else {
-        root->right = std::move(insertValue(root->right, value, Axis::X));
+        root->right =
+            this->removeByPointValueRecursive(root->right, value, nextAxis);
       }
     }
 
@@ -337,8 +382,8 @@ public:
     }
   }
 
-  void remove(PointValue<C, V> pv) {
-    // this->root = this->insertValue(this->root, value, Axis::X);
+  void removeByPointValue(const PointValue<C, V> &value) {
+    this->root = this->removeByPointValueRecursive(this->root, value, Axis::X);
   }
 
   void rebalance() {

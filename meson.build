@@ -39,7 +39,7 @@ exe = executable(
 )
 
 test_point_tree = executable(
-  'point_tree',
+  'test_point_tree',
   sources: [
     'tests/test_point_tree.cpp'
   ],
@@ -47,7 +47,7 @@ test_point_tree = executable(
 )
 
 test(
-  'test_point_tree',
+  'point_tree',
   test_point_tree,
   args: '--gtest_color=yes'
 )
