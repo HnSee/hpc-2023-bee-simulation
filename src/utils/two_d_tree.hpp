@@ -185,6 +185,16 @@ public:
 
   std::size_t height() { return this->calculateHeight(this->root); }
 
+  void add(CoordinatesValue<C, V> value) {
+    this->nodes.push_back(value);
+    this->root = this->makeTree(0, this->nodes.size(), Axis::X);
+  }
+
+  template <typename iterator> void addRange(iterator begin, iterator end) {
+    this->nodes.insert(this->nodes.end(), begin, end);
+    this->root = this->makeTree(0, this->nodes.size(), Axis::X);
+  }
+
   NearestResult<C, V> *nearest(const Coordinates<C> &point) {
     if (root == nullptr) {
       return nullptr;

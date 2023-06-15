@@ -20,6 +20,29 @@ static Coordinates<CoordinateType> constructRandomCoordinates(std::size_t min,
   return randomCoordinate;
 }
 
+static CoordinatesValue<CoordinateType, ValueType>
+constructRandomCoordinatesValue(std::size_t minCoordinate,
+                                std::size_t maxCoordinate, std::size_t minValue,
+                                std::size_t maxValue) {
+  std::random_device dev;
+  std::mt19937 rng(dev());
+  std::uniform_real_distribution<CoordinateType> uniformCoordinates(
+      minCoordinate, maxCoordinate);
+  std::uniform_real_distribution<ValueType> uniformValues(minValue, maxValue);
+
+  std::vector<CoordinatesValue<CoordinateType, ValueType>>
+      randomCoordinatesValues;
+
+  CoordinateType randomX = uniformCoordinates(rng);
+  CoordinateType randomY = uniformCoordinates(rng);
+  ValueType randomValue = uniformValues(rng);
+
+  CoordinatesValue<CoordinateType, ValueType> randomCoordinatesValue(
+      randomX, randomY, randomValue);
+
+  return randomCoordinatesValue;
+}
+
 static std::vector<CoordinatesValue<CoordinateType, ValueType>>
 constructRandomCoordinatesValues(std::size_t minCoordinate,
                                  std::size_t maxCoordinate,
@@ -126,6 +149,41 @@ static void BM_Two_D_Tree_Nearest(benchmark::State &state) {
   }
 }
 
+static void BM_Two_D_Tree_Add_Single(benchmark::State &state) {
+  TwoDTree<CoordinateType, ValueType> tree;
+  int64_t lastSize = 0;
+  for (auto _ : state) {
+    state.PauseTiming();
+    if (lastSize != state.range()) {
+      tree = constructRandomTree(state.range());
+      lastSize = state.range();
+    }
+    auto randomCoordinatesValue =
+        constructRandomCoordinatesValue(0, 100, 0, 100);
+    state.ResumeTiming();
+
+    tree.add(std::move(randomCoordinatesValue));
+  }
+}
+
+static void BM_Two_D_Tree_Add_Range(benchmark::State &state) {
+  TwoDTree<CoordinateType, ValueType> tree;
+  int64_t lastSize = 0;
+  for (auto _ : state) {
+    state.PauseTiming();
+    if (lastSize != state.range()) {
+      tree = constructRandomTree(state.range(0));
+      lastSize = state.range();
+    }
+    auto randomCoordinatesValues =
+        constructRandomCoordinatesValues(0, 100, 0, 100, state.range(1));
+    state.ResumeTiming();
+
+    tree.addRange(randomCoordinatesValues.begin(),
+                  randomCoordinatesValues.end());
+  }
+}
+
 // static void BM_MultiKeyMatrix_Insert(benchmark::State &state) {
 //   CoordinateMatrix<InnerMatrixType> matrix;
 //   int64_t lastSize = 0;
@@ -174,7 +232,13 @@ static void BM_Two_D_Tree_Nearest(benchmark::State &state) {
 
 // BENCHMARK(BM_Two_D_Tree_Height)->RangeMultiplier(2)->Range(2, 2 << 16);
 
-BENCHMARK(BM_Two_D_Tree_Nearest)->RangeMultiplier(2)->Range(2, 2 << 18);
+// BENCHMARK(BM_Two_D_Tree_Nearest)->RangeMultiplier(2)->Range(2, 2 << 18);
+
+BENCHMARK(BM_Two_D_Tree_Add_Single)->RangeMultiplier(2)->Range(2, 2 << 18);
+
+BENCHMARK(BM_Two_D_Tree_Add_Range)
+    ->RangeMultiplier(2)
+    ->Ranges({{2, 2 << 18}, {2, 2 << 18}});
 
 // BENCHMARK(BM_MultiKeyMatrix_Insert)
 //     ->RangeMultiplier(2)
