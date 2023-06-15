@@ -1,4 +1,4 @@
-#include "../src/utils/two_d_tree.hpp"
+#include "../src/utils/point_tree.hpp"
 #include <algorithm>
 #include <benchmark/benchmark.h>
 #include <cstddef>
@@ -20,64 +20,54 @@ static Coordinates<CoordinateType> constructRandomCoordinates(std::size_t min,
   return randomCoordinate;
 }
 
-static CoordinatesValue<CoordinateType, ValueType>
-constructRandomCoordinatesValue(std::size_t minCoordinate,
-                                std::size_t maxCoordinate, std::size_t minValue,
-                                std::size_t maxValue) {
+static PointValue<CoordinateType, ValueType>
+constructRandomPointValue(std::size_t minCoordinate, std::size_t maxCoordinate,
+                          std::size_t minValue, std::size_t maxValue) {
   std::random_device dev;
   std::mt19937 rng(dev());
   std::uniform_real_distribution<CoordinateType> uniformCoordinates(
       minCoordinate, maxCoordinate);
   std::uniform_real_distribution<ValueType> uniformValues(minValue, maxValue);
-
-  std::vector<CoordinatesValue<CoordinateType, ValueType>>
-      randomCoordinatesValues;
 
   CoordinateType randomX = uniformCoordinates(rng);
   CoordinateType randomY = uniformCoordinates(rng);
   ValueType randomValue = uniformValues(rng);
 
-  CoordinatesValue<CoordinateType, ValueType> randomCoordinatesValue(
-      randomX, randomY, randomValue);
+  PointValue<CoordinateType, ValueType> randomPointValue(randomX, randomY,
+                                                         randomValue);
 
-  return randomCoordinatesValue;
+  return randomPointValue;
 }
 
-static std::vector<CoordinatesValue<CoordinateType, ValueType>>
-constructRandomCoordinatesValues(std::size_t minCoordinate,
-                                 std::size_t maxCoordinate,
-                                 std::size_t minValue, std::size_t maxValue,
-                                 std::size_t count) {
+static std::vector<PointValue<CoordinateType, ValueType>>
+constructRandomPointValues(std::size_t minCoordinate, std::size_t maxCoordinate,
+                           std::size_t minValue, std::size_t maxValue,
+                           std::size_t count) {
   std::random_device dev;
   std::mt19937 rng(dev());
   std::uniform_real_distribution<CoordinateType> uniformCoordinates(
       minCoordinate, maxCoordinate);
   std::uniform_real_distribution<ValueType> uniformValues(minValue, maxValue);
 
-  std::vector<CoordinatesValue<CoordinateType, ValueType>>
-      randomCoordinatesValues;
+  std::vector<PointValue<CoordinateType, ValueType>> randomPointValues;
 
   for (std::size_t i = 0; i < count; i++) {
     CoordinateType randomX = uniformCoordinates(rng);
     CoordinateType randomY = uniformCoordinates(rng);
     ValueType randomValue = uniformValues(rng);
 
-    CoordinatesValue<CoordinateType, ValueType> randomCoordinatesValue(
-        randomX, randomY, randomValue);
-
-    randomCoordinatesValues.push_back(std::move(randomCoordinatesValue));
+    randomPointValues.emplace_back(randomX, randomY, randomValue);
   }
 
-  return randomCoordinatesValues;
+  return randomPointValues;
 }
 
-static TwoDTree<CoordinateType, ValueType>
+static PointTree<CoordinateType, ValueType>
 constructRandomTree(std::size_t nodes) {
-  auto randomCoordinatesValues =
-      constructRandomCoordinatesValues(0, 100, 0, 1000, nodes);
+  auto randomPointValues = constructRandomPointValues(0, 100, 0, 1000, nodes);
 
-  TwoDTree<CoordinateType, ValueType> randomTree(
-      randomCoordinatesValues.begin(), randomCoordinatesValues.end());
+  PointTree<CoordinateType, ValueType> randomTree(randomPointValues.begin(),
+                                                  randomPointValues.end());
 
   return randomTree;
 }
@@ -110,16 +100,16 @@ static void BM_Two_D_Tree_Init(benchmark::State &state) {
   for (auto _ : state) {
     state.PauseTiming();
     auto randomValues =
-        constructRandomCoordinatesValues(0, 100, 0, 100, state.range());
+        constructRandomPointValues(0, 100, 0, 100, state.range());
     state.ResumeTiming();
 
-    TwoDTree<CoordinateType, ValueType> tree(randomValues.begin(),
-                                             randomValues.end());
+    PointTree<CoordinateType, ValueType> tree(randomValues.begin(),
+                                              randomValues.end());
   }
 }
 
 static void BM_Two_D_Tree_Height(benchmark::State &state) {
-  TwoDTree<CoordinateType, ValueType> tree;
+  PointTree<CoordinateType, ValueType> tree;
   int64_t lastSize = 0;
   for (auto _ : state) {
     state.PauseTiming();
@@ -134,7 +124,7 @@ static void BM_Two_D_Tree_Height(benchmark::State &state) {
 }
 
 static void BM_Two_D_Tree_Nearest(benchmark::State &state) {
-  TwoDTree<CoordinateType, ValueType> tree;
+  PointTree<CoordinateType, ValueType> tree;
   int64_t lastSize = 0;
   for (auto _ : state) {
     state.PauseTiming();
@@ -150,7 +140,7 @@ static void BM_Two_D_Tree_Nearest(benchmark::State &state) {
 }
 
 static void BM_Two_D_Tree_Add_Single_Unbalanced(benchmark::State &state) {
-  TwoDTree<CoordinateType, ValueType> tree;
+  PointTree<CoordinateType, ValueType> tree;
   int64_t lastSize = 0;
   for (auto _ : state) {
     state.PauseTiming();
@@ -158,8 +148,7 @@ static void BM_Two_D_Tree_Add_Single_Unbalanced(benchmark::State &state) {
       tree = constructRandomTree(state.range());
       lastSize = state.range();
     }
-    auto randomCoordinatesValue =
-        constructRandomCoordinatesValue(0, 100, 0, 100);
+    auto randomCoordinatesValue = constructRandomPointValue(0, 100, 0, 100);
     state.ResumeTiming();
 
     tree.add(std::move(randomCoordinatesValue));
@@ -167,7 +156,7 @@ static void BM_Two_D_Tree_Add_Single_Unbalanced(benchmark::State &state) {
 }
 
 static void BM_Two_D_Tree_Add_Single_Balanced(benchmark::State &state) {
-  TwoDTree<CoordinateType, ValueType> tree;
+  PointTree<CoordinateType, ValueType> tree;
   int64_t lastSize = 0;
   for (auto _ : state) {
     state.PauseTiming();
@@ -175,8 +164,7 @@ static void BM_Two_D_Tree_Add_Single_Balanced(benchmark::State &state) {
       tree = constructRandomTree(state.range());
       lastSize = state.range();
     }
-    auto randomCoordinatesValue =
-        constructRandomCoordinatesValue(0, 100, 0, 100);
+    auto randomCoordinatesValue = constructRandomPointValue(0, 100, 0, 100);
     state.ResumeTiming();
 
     tree.add(std::move(randomCoordinatesValue));
@@ -185,7 +173,7 @@ static void BM_Two_D_Tree_Add_Single_Balanced(benchmark::State &state) {
 }
 
 static void BM_Two_D_Tree_Add_Range_Unbalanced(benchmark::State &state) {
-  TwoDTree<CoordinateType, ValueType> tree;
+  PointTree<CoordinateType, ValueType> tree;
   int64_t lastSize = 0;
   for (auto _ : state) {
     state.PauseTiming();
@@ -194,7 +182,7 @@ static void BM_Two_D_Tree_Add_Range_Unbalanced(benchmark::State &state) {
       lastSize = state.range();
     }
     auto randomCoordinatesValues =
-        constructRandomCoordinatesValues(0, 100, 0, 100, state.range(1));
+        constructRandomPointValues(0, 100, 0, 100, state.range(1));
     state.ResumeTiming();
 
     tree.addRange(randomCoordinatesValues.begin(),
@@ -203,7 +191,7 @@ static void BM_Two_D_Tree_Add_Range_Unbalanced(benchmark::State &state) {
 }
 
 static void BM_Two_D_Tree_Add_Range_Balanced(benchmark::State &state) {
-  TwoDTree<CoordinateType, ValueType> tree;
+  PointTree<CoordinateType, ValueType> tree;
   int64_t lastSize = 0;
   for (auto _ : state) {
     state.PauseTiming();
@@ -212,7 +200,7 @@ static void BM_Two_D_Tree_Add_Range_Balanced(benchmark::State &state) {
       lastSize = state.range();
     }
     auto randomCoordinatesValues =
-        constructRandomCoordinatesValues(0, 100, 0, 100, state.range(1));
+        constructRandomPointValues(0, 100, 0, 100, state.range(1));
     state.ResumeTiming();
 
     tree.addRange(randomCoordinatesValues.begin(),

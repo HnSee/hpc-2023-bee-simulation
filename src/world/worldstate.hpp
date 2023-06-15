@@ -1,7 +1,7 @@
 #ifndef BEESIMULATION_WORLD_WORLDSTATE_H
 #define BEESIMULATION_WORLD_WORLDSTATE_H
 
-#include "../utils/two_d_tree.hpp"
+#include "../utils/point_tree.hpp"
 #include "generator.hpp"
 #include <memory>
 
@@ -10,7 +10,7 @@ public:
   WorldState(WorldMap map);
 
 private:
-  TwoDTree<double, double> agents;
+  PointTree<double, double> agents;
   WorldMap map;
 };
 

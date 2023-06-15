@@ -38,32 +38,32 @@ exe = executable(
   install: true
 )
 
-test_two_d_tree = executable(
-  'two_d_tree',
+test_point_tree = executable(
+  'point_tree',
   sources: [
-    'tests/test_two_d_tree.cpp'
+    'tests/test_point_tree.cpp'
   ],
   dependencies: [gtest_dep, gtest_main_dep]
 )
 
 test(
-  'two_d_tree',
-  test_two_d_tree,
+  'test_point_tree',
+  test_point_tree,
   args: '--gtest_color=yes'
 )
 
-bm_two_d_tree = executable(
-  'bm_two_d_tree',
+bm_point_tree = executable(
+  'bm_point_tree',
   sources: [
-    'benchmarks/two_d_tree.cpp'
+    'benchmarks/point_tree.cpp'
   ],
   dependencies: [benchmarking_dep]
 )
 
 benchmark(
-  'two_d_tree',
-  bm_two_d_tree,
+  'point_tree',
+  bm_point_tree,
   verbose: true,
   timeout: 900,
-  args: '--benchmark_out=results_twodmap.json'
+  args: '--benchmark_out=results_pointtree.json'
 )
