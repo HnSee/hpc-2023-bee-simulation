@@ -17,6 +17,10 @@ template <typename C> struct Coordinates {
   C x;
   C y;
 
+  friend bool operator==(const Coordinates<C> &l, const Coordinates<C> &r) {
+    return l.x == r.x && l.y == r.y;
+  }
+
   double getDistanceTo(const Coordinates<C> &c) const {
     return calculateEuclideanDistance(*this, c);
   }
@@ -155,6 +159,65 @@ private:
     return std::move(root);
   }
 
+  std::unique_ptr<Node> &minimumPoint(std::unique_ptr<Node> &n1,
+                                      std::unique_ptr<Node> &n2,
+                                      std::unique_ptr<Node> &n3, Axis axis) {
+    std::unique_ptr<Node> &result = n1;
+    if (axis == Axis::X) {
+      if (n1 && n1->point.x < ) {
+      }
+    }
+  }
+
+  std::unique_ptr<Node> &findMinimum(std::unique_ptr<Node> &root,
+                                     Axis axisToSearch, Axis currentAxis) {
+    if (!root) {
+      return nullptr;
+    }
+
+    if (axisToSearch == currentAxis) {
+      if (!root->left) {
+        return root;
+      } else {
+        return
+      }
+    }
+  }
+
+  std::unique_ptr<Node> removeValue(std::unique_ptr<Node> &root,
+                                    PointValue<C, V> &value, Axis axis) {
+    if (!root) {
+      return nullptr;
+    }
+
+    if (root->point == value.point && root->value == value.value) {
+
+      if (root->right) {
+        std::unique_ptr<Node> minimum =
+      }
+
+      if (!root->left && !root->right) {
+        return nullptr;
+      }
+    }
+
+    if (axis == Axis::X) {
+      if (value.point.x < root->point.x) {
+        root->left = std::move(insertValue(root->left, value, Axis::Y));
+      } else {
+        root->right = std::move(insertValue(root->right, value, Axis::Y));
+      }
+    } else {
+      if (value.point.y < root->point.y) {
+        root->left = std::move(insertValue(root->left, value, Axis::X));
+      } else {
+        root->right = std::move(insertValue(root->right, value, Axis::X));
+      }
+    }
+
+    return std::move(root);
+  }
+
   void calculateNearest(std::unique_ptr<Node> &currentNode,
                         const Coordinates<C> &point, Axis axis) {
     if (!currentNode) {
@@ -251,6 +314,10 @@ public:
     for (auto it = begin; it != end; ++it) {
       this->root = this->insertValue(this->root, *it, Axis::X);
     }
+  }
+
+  void remove(PointValue<C, V> pv) {
+    this->root = this->insertValue(this->root, value, Axis::X);
   }
 
   void rebalance() {
