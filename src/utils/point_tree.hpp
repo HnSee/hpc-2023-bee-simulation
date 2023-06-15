@@ -163,10 +163,10 @@ private:
                                       std::unique_ptr<Node> &n2,
                                       std::unique_ptr<Node> &n3, Axis axis) {
     std::unique_ptr<Node> &result = n1;
-    if (axis == Axis::X) {
-      if (n1 && n1->point.x < ) {
-      }
-    }
+    // if (axis == Axis::X) {
+    //   if (n1 && n1->point.x <) {
+    //   }
+    // }
   }
 
   std::unique_ptr<Node> &findMinimum(std::unique_ptr<Node> &root,
@@ -175,13 +175,13 @@ private:
       return nullptr;
     }
 
-    if (axisToSearch == currentAxis) {
-      if (!root->left) {
-        return root;
-      } else {
-        return
-      }
-    }
+    // if (axisToSearch == currentAxis) {
+    //   if (!root->left) {
+    //     return root;
+    //   } else {
+    //     return
+    //   }
+    // }
   }
 
   std::unique_ptr<Node> removeValue(std::unique_ptr<Node> &root,
@@ -192,9 +192,9 @@ private:
 
     if (root->point == value.point && root->value == value.value) {
 
-      if (root->right) {
-        std::unique_ptr<Node> minimum =
-      }
+      // if (root->right) {
+      //   std::unique_ptr<Node> minimum =
+      // }
 
       if (!root->left && !root->right) {
         return nullptr;
@@ -291,6 +291,27 @@ private:
     this->collectNodes(node->right);
   }
 
+  void traverseParentChildNodePairs(
+      const std::unique_ptr<Node> &node,
+      const std::function<void(const std::unique_ptr<Node> &,
+                               const std::unique_ptr<Node> &)> &f) {
+    if (!node) {
+      return;
+    }
+
+    this->traverseParentChildNodePairs(node->left, f);
+
+    if (node->left) {
+      f(node, node->left);
+    }
+
+    if (node->right) {
+      f(node, node->right);
+    }
+
+    this->traverseParentChildNodePairs(node->right, f);
+  }
+
 public:
   PointTree() {}
 
@@ -317,7 +338,7 @@ public:
   }
 
   void remove(PointValue<C, V> pv) {
-    this->root = this->insertValue(this->root, value, Axis::X);
+    // this->root = this->insertValue(this->root, value, Axis::X);
   }
 
   void rebalance() {
@@ -345,19 +366,13 @@ public:
     std::stringstream result;
     result << "digraph G {" << std::endl;
 
-    // for (auto &node : this->nodes) {
-    //   if (node.left != nullptr) {
-    //     result << "\"" << node << "\""
-    //            << "->"
-    //            << "\"" << *(node.left) << "\"" << std::endl;
-    //   }
-
-    //   if (node.right != nullptr) {
-    //     result << "\"" << node << "\""
-    //            << "->"
-    //            << "\"" << *(node.right) << "\"" << std::endl;
-    //   }
-    // }
+    this->traverseParentChildNodePairs(
+        this->root, [&result](const std::unique_ptr<Node> &parent,
+                              const std::unique_ptr<Node> &child) {
+          result << "  \"" << *parent << "\""
+                 << "->"
+                 << "\"" << *child << "\"" << std::endl;
+        });
 
     result << "}";
     return result.str();
