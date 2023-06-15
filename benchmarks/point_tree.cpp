@@ -96,7 +96,7 @@ constructRandomTree(std::size_t nodes) {
 //   return uniform(rng);
 // }
 
-static void BM_Two_D_Tree_Init(benchmark::State &state) {
+static void BM_Point_Tree_Init(benchmark::State &state) {
   for (auto _ : state) {
     state.PauseTiming();
     auto randomValues =
@@ -108,7 +108,7 @@ static void BM_Two_D_Tree_Init(benchmark::State &state) {
   }
 }
 
-static void BM_Two_D_Tree_Height(benchmark::State &state) {
+static void BM_Point_Tree_Height(benchmark::State &state) {
   PointTree<CoordinateType, ValueType> tree;
   int64_t lastSize = 0;
   for (auto _ : state) {
@@ -123,7 +123,7 @@ static void BM_Two_D_Tree_Height(benchmark::State &state) {
   }
 }
 
-static void BM_Two_D_Tree_Nearest(benchmark::State &state) {
+static void BM_Point_Tree_Nearest(benchmark::State &state) {
   PointTree<CoordinateType, ValueType> tree;
   int64_t lastSize = 0;
   for (auto _ : state) {
@@ -139,15 +139,11 @@ static void BM_Two_D_Tree_Nearest(benchmark::State &state) {
   }
 }
 
-static void BM_Two_D_Tree_Add_Single_Unbalanced(benchmark::State &state) {
+static void BM_Point_Tree_Add_Without_Rebalance(benchmark::State &state) {
   PointTree<CoordinateType, ValueType> tree;
-  int64_t lastSize = 0;
   for (auto _ : state) {
     state.PauseTiming();
-    if (lastSize != state.range()) {
-      tree = constructRandomTree(state.range());
-      lastSize = state.range();
-    }
+    tree = constructRandomTree(state.range());
     auto randomCoordinatesValue = constructRandomPointValue(0, 100, 0, 100);
     state.ResumeTiming();
 
@@ -155,15 +151,10 @@ static void BM_Two_D_Tree_Add_Single_Unbalanced(benchmark::State &state) {
   }
 }
 
-static void BM_Two_D_Tree_Add_Single_Balanced(benchmark::State &state) {
+static void BM_Point_Tree_Add_With_Rebalance(benchmark::State &state) {
   PointTree<CoordinateType, ValueType> tree;
-  int64_t lastSize = 0;
   for (auto _ : state) {
-    state.PauseTiming();
-    if (lastSize != state.range()) {
-      tree = constructRandomTree(state.range());
-      lastSize = state.range();
-    }
+    tree = constructRandomTree(state.range());
     auto randomCoordinatesValue = constructRandomPointValue(0, 100, 0, 100);
     state.ResumeTiming();
 
@@ -172,40 +163,30 @@ static void BM_Two_D_Tree_Add_Single_Balanced(benchmark::State &state) {
   }
 }
 
-static void BM_Two_D_Tree_Add_Range_Unbalanced(benchmark::State &state) {
+static void BM_Point_Tree_Remove_With_Balance(benchmark::State &state) {
   PointTree<CoordinateType, ValueType> tree;
-  int64_t lastSize = 0;
   for (auto _ : state) {
     state.PauseTiming();
-    if (lastSize != state.range()) {
-      tree = constructRandomTree(state.range(0));
-      lastSize = state.range();
-    }
-    auto randomCoordinatesValues =
-        constructRandomPointValues(0, 100, 0, 100, state.range(1));
+    tree = constructRandomTree(state.range());
+    auto randomCoordinatesValue = constructRandomPointValue(0, 100, 0, 100);
+    tree.add(randomCoordinatesValue);
+    tree.rebalance();
     state.ResumeTiming();
 
-    tree.addRange(randomCoordinatesValues.begin(),
-                  randomCoordinatesValues.end());
+    tree.removeByPointValue(randomCoordinatesValue);
   }
 }
 
-static void BM_Two_D_Tree_Add_Range_Balanced(benchmark::State &state) {
+static void BM_Point_Tree_Remove_Without_Balance(benchmark::State &state) {
   PointTree<CoordinateType, ValueType> tree;
-  int64_t lastSize = 0;
   for (auto _ : state) {
     state.PauseTiming();
-    if (lastSize != state.range()) {
-      tree = constructRandomTree(state.range(0));
-      lastSize = state.range();
-    }
-    auto randomCoordinatesValues =
-        constructRandomPointValues(0, 100, 0, 100, state.range(1));
+    tree = constructRandomTree(state.range());
+    auto randomCoordinatesValue = constructRandomPointValue(0, 100, 0, 100);
+    tree.add(randomCoordinatesValue);
     state.ResumeTiming();
 
-    tree.addRange(randomCoordinatesValues.begin(),
-                  randomCoordinatesValues.end());
-    tree.rebalance();
+    tree.removeByPointValue(randomCoordinatesValue);
   }
 }
 
@@ -253,27 +234,27 @@ static void BM_Two_D_Tree_Add_Range_Balanced(benchmark::State &state) {
 //   }
 // }
 
-// BENCHMARK(BM_Two_D_Tree_Init)->RangeMultiplier(2)->Range(2, 2 << 16);
+BENCHMARK(BM_Point_Tree_Init)->RangeMultiplier(2)->Range(2, 2 << 16);
 
-// BENCHMARK(BM_Two_D_Tree_Height)->RangeMultiplier(2)->Range(2, 2 << 16);
+BENCHMARK(BM_Point_Tree_Height)->RangeMultiplier(2)->Range(2, 2 << 16);
 
-// BENCHMARK(BM_Two_D_Tree_Nearest)->RangeMultiplier(2)->Range(2, 2 << 18);
+BENCHMARK(BM_Point_Tree_Nearest)->RangeMultiplier(2)->Range(2, 2 << 18);
 
-BENCHMARK(BM_Two_D_Tree_Add_Single_Unbalanced)
+BENCHMARK(BM_Point_Tree_Add_Without_Rebalance)
     ->RangeMultiplier(2)
     ->Range(2, 2 << 18);
 
-// BENCHMARK(BM_Two_D_Tree_Add_Single_Balanced)
-//     ->RangeMultiplier(2)
-//     ->Range(2, 2 << 18);
+BENCHMARK(BM_Point_Tree_Add_With_Rebalance)
+    ->RangeMultiplier(2)
+    ->Range(2, 2 << 18);
 
-// BENCHMARK(BM_Two_D_Tree_Add_Range_Unbalanced)
-//     ->RangeMultiplier(2)
-//     ->Ranges({{2, 2 << 18}, {2, 2 << 18}});
+BENCHMARK(BM_Point_Tree_Remove_Without_Balance)
+    ->RangeMultiplier(2)
+    ->Range(2, 2 << 18);
 
-// BENCHMARK(BM_Two_D_Tree_Add_Range_Balanced)
-//     ->RangeMultiplier(2)
-//     ->Ranges({{2, 2 << 18}, {2, 2 << 18}});
+BENCHMARK(BM_Point_Tree_Remove_With_Balance)
+    ->RangeMultiplier(2)
+    ->Range(2, 2 << 18);
 
 // BENCHMARK(BM_MultiKeyMatrix_Insert)
 //     ->RangeMultiplier(2)

@@ -64,6 +64,6 @@ benchmark(
   'point_tree',
   bm_point_tree,
   verbose: true,
-  timeout: 900,
+  timeout: 999999999999,
   args: '--benchmark_out=results_pointtree.json'
 )
