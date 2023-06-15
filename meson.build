@@ -65,5 +65,5 @@ benchmark(
   bm_two_d_tree,
   verbose: true,
   timeout: 900,
-  args: '--benchmark_out=results_worldmap.json'
+  args: '--benchmark_out=results_twodmap.json'
 )

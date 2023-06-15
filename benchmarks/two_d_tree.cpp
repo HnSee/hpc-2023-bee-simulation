@@ -149,7 +149,7 @@ static void BM_Two_D_Tree_Nearest(benchmark::State &state) {
   }
 }
 
-static void BM_Two_D_Tree_Add_Single(benchmark::State &state) {
+static void BM_Two_D_Tree_Add_Single_Unbalanced(benchmark::State &state) {
   TwoDTree<CoordinateType, ValueType> tree;
   int64_t lastSize = 0;
   for (auto _ : state) {
@@ -166,7 +166,25 @@ static void BM_Two_D_Tree_Add_Single(benchmark::State &state) {
   }
 }
 
-static void BM_Two_D_Tree_Add_Range(benchmark::State &state) {
+static void BM_Two_D_Tree_Add_Single_Balanced(benchmark::State &state) {
+  TwoDTree<CoordinateType, ValueType> tree;
+  int64_t lastSize = 0;
+  for (auto _ : state) {
+    state.PauseTiming();
+    if (lastSize != state.range()) {
+      tree = constructRandomTree(state.range());
+      lastSize = state.range();
+    }
+    auto randomCoordinatesValue =
+        constructRandomCoordinatesValue(0, 100, 0, 100);
+    state.ResumeTiming();
+
+    tree.add(std::move(randomCoordinatesValue));
+    tree.rebalance();
+  }
+}
+
+static void BM_Two_D_Tree_Add_Range_Unbalanced(benchmark::State &state) {
   TwoDTree<CoordinateType, ValueType> tree;
   int64_t lastSize = 0;
   for (auto _ : state) {
@@ -181,6 +199,25 @@ static void BM_Two_D_Tree_Add_Range(benchmark::State &state) {
 
     tree.addRange(randomCoordinatesValues.begin(),
                   randomCoordinatesValues.end());
+  }
+}
+
+static void BM_Two_D_Tree_Add_Range_Balanced(benchmark::State &state) {
+  TwoDTree<CoordinateType, ValueType> tree;
+  int64_t lastSize = 0;
+  for (auto _ : state) {
+    state.PauseTiming();
+    if (lastSize != state.range()) {
+      tree = constructRandomTree(state.range(0));
+      lastSize = state.range();
+    }
+    auto randomCoordinatesValues =
+        constructRandomCoordinatesValues(0, 100, 0, 100, state.range(1));
+    state.ResumeTiming();
+
+    tree.addRange(randomCoordinatesValues.begin(),
+                  randomCoordinatesValues.end());
+    tree.rebalance();
   }
 }
 
@@ -234,11 +271,21 @@ static void BM_Two_D_Tree_Add_Range(benchmark::State &state) {
 
 // BENCHMARK(BM_Two_D_Tree_Nearest)->RangeMultiplier(2)->Range(2, 2 << 18);
 
-BENCHMARK(BM_Two_D_Tree_Add_Single)->RangeMultiplier(2)->Range(2, 2 << 18);
-
-BENCHMARK(BM_Two_D_Tree_Add_Range)
+BENCHMARK(BM_Two_D_Tree_Add_Single_Unbalanced)
     ->RangeMultiplier(2)
-    ->Ranges({{2, 2 << 18}, {2, 2 << 18}});
+    ->Range(2, 2 << 18);
+
+// BENCHMARK(BM_Two_D_Tree_Add_Single_Balanced)
+//     ->RangeMultiplier(2)
+//     ->Range(2, 2 << 18);
+
+// BENCHMARK(BM_Two_D_Tree_Add_Range_Unbalanced)
+//     ->RangeMultiplier(2)
+//     ->Ranges({{2, 2 << 18}, {2, 2 << 18}});
+
+// BENCHMARK(BM_Two_D_Tree_Add_Range_Balanced)
+//     ->RangeMultiplier(2)
+//     ->Ranges({{2, 2 << 18}, {2, 2 << 18}});
 
 // BENCHMARK(BM_MultiKeyMatrix_Insert)
 //     ->RangeMultiplier(2)

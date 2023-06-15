@@ -120,6 +120,28 @@ private:
     return &this->nodes[mean];
   }
 
+  Node *insertValue(Node *root, Node *value, Axis axis) {
+    if (root == nullptr) {
+      return value;
+    }
+
+    if (axis == Axis::X) {
+      if (value->point.x < root->point.x) {
+        root->left = insertValue(root->left, value, Axis::Y);
+      } else {
+        root->right = insertValue(root->right, value, Axis::Y);
+      }
+    } else {
+      if (value->point.y < root->point.y) {
+        root->left = insertValue(root->left, value, Axis::X);
+      } else {
+        root->right = insertValue(root->right, value, Axis::X);
+      }
+    }
+
+    return root;
+  }
+
   void calculateNearest(Node *currentNode, const Coordinates<C> &point,
                         Axis axis) {
     if (currentNode == nullptr) {
@@ -186,12 +208,22 @@ public:
   std::size_t height() { return this->calculateHeight(this->root); }
 
   void add(CoordinatesValue<C, V> value) {
-    this->nodes.push_back(value);
-    this->root = this->makeTree(0, this->nodes.size(), Axis::X);
+    Node newNode(value);
+    this->nodes.push_back(std::move(newNode));
+    // this->root = this->makeTree(0, this->nodes.size(), Axis::X);
+    this->root = this->insertValue(this->root, &this->nodes.back(), Axis::X);
   }
 
   template <typename iterator> void addRange(iterator begin, iterator end) {
-    this->nodes.insert(this->nodes.end(), begin, end);
+    // this->root = this->makeTree(0, this->nodes.size(), Axis::X);
+    for (auto it = begin; it != end; ++it) {
+      Node newNode(*it);
+      this->nodes.push_back(std::move(newNode));
+      this->root = this->insertValue(this->root, &this->nodes.back(), Axis::X);
+    }
+  }
+
+  void rebalance() {
     this->root = this->makeTree(0, this->nodes.size(), Axis::X);
   }
 

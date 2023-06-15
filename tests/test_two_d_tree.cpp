@@ -221,6 +221,7 @@ TEST(TwoDTree, AddInt1) {
   EXPECT_EQ(tree.size(), 15);
 
   tree.add(cv(4, 4, 2));
+  tree.rebalance();
 
   EXPECT_EQ(tree.height(), 5);
   EXPECT_EQ(tree.size(), 16);
@@ -242,6 +243,7 @@ TEST(TwoDTree, AddInt2) {
   tree.add(cv(5, 2, 4));
   tree.add(cv(8, 0, 5));
   tree.add(cv(7, 6, 9));
+  tree.rebalance();
 
   EXPECT_EQ(tree.height(), 5);
   EXPECT_EQ(tree.size(), 28);
@@ -261,6 +263,7 @@ TEST(TwoDTree, AddDouble1) {
   EXPECT_EQ(tree.size(), 15);
 
   tree.add(cv(5.60, 2.57, 8.70));
+  tree.rebalance();
 
   EXPECT_EQ(tree.height(), 5);
   EXPECT_EQ(tree.size(), 16);
@@ -286,6 +289,7 @@ TEST(TwoDTree, AddDouble2) {
   tree.add(cv(1.64, 8.77, 8.98));
   tree.add(cv(1.54, 0.55, 7.80));
   tree.add(cv(0.31, 7.39, 4.02));
+  tree.rebalance();
 
   EXPECT_EQ(tree.height(), 5);
   EXPECT_EQ(tree.size(), 28);
@@ -306,6 +310,7 @@ TEST(TwoDTree, AddRangeInt1) {
       cv(4, 9, 5), cv(3, 6, 0), cv(9, 9, 1), cv(8, 7, 3), cv(6, 5, 5)};
 
   tree.addRange(std::begin(newValues), std::end(newValues));
+  tree.rebalance();
 
   EXPECT_EQ(tree.height(), 5);
   EXPECT_EQ(tree.size(), 20);
@@ -332,6 +337,7 @@ TEST(TwoDTree, AddRangeDouble1) {
       cv(6.10, 5.44, 1.10), cv(0.53, 5.70, 5.11)};
 
   tree.addRange(std::begin(newValues), std::end(newValues));
+  tree.rebalance();
 
   EXPECT_EQ(tree.height(), 5);
   EXPECT_EQ(tree.size(), 29);
