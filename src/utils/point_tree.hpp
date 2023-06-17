@@ -22,6 +22,14 @@ template <typename C> struct Coordinates {
     return l.x == r.x && l.y == r.y;
   }
 
+  bool smallerThan(const Coordinates<C> &c, Axis axis) const {
+    return axis == Axis::X ? this->x < c.x : this->y < c.y;
+  }
+
+  double difference(const Coordinates<C> &c, Axis axis) const {
+    return axis == Axis::X ? this->x - c.x : this->y - c.y;
+  }
+
   double getDistanceTo(const Coordinates<C> &c) const {
     return calculateEuclideanDistance(*this, c);
   }
@@ -55,6 +63,19 @@ template <typename C, typename V> struct NearestResult {
   const double distance;
   const int visited;
 };
+
+template <typename C, typename V> struct PartialRangeResult {
+  Coordinates<C> point;
+  V &value;
+  double distance;
+
+public:
+  PartialRangeResult(Coordinates<C> point, V &value, double distance)
+      : point(point), value(value), distance(distance) {}
+};
+
+template <typename C, typename V>
+using RangeResult = std::vector<PartialRangeResult<C, V>>;
 
 template <typename C, typename V> class PointTree {
 
@@ -316,6 +337,39 @@ private:
     return std::max(leftHeight, rightHeight) + 1;
   }
 
+  void calculateRange(RangeResult<C, V> &result,
+                      std::unique_ptr<Node> &currentNode,
+                      const Coordinates<C> &point, double range,
+                      Axis currentAxis) {
+    if (!currentNode) {
+      return;
+    }
+
+    double distance = point.getDistanceTo(currentNode->point);
+    if (distance <= range) {
+      result.emplace_back(currentNode->point, *currentNode->value, distance);
+    }
+
+    Axis nextAxis = currentAxis == Axis::X ? Axis::Y : Axis::X;
+
+    this->calculateRange(result,
+                         point.smallerThan(currentNode->point, currentAxis)
+                             ? currentNode->left
+                             : currentNode->right,
+                         point, range, nextAxis);
+
+    double difference =
+        std::abs(point.difference(currentNode->point, currentAxis));
+
+    if (difference <= range) {
+      this->calculateRange(result,
+                           point.smallerThan(currentNode->point, currentAxis)
+                               ? currentNode->right
+                               : currentNode->left,
+                           point, range, nextAxis);
+    }
+  }
+
   std::size_t traverseAndCount(std::unique_ptr<Node> &node) {
     if (!node) {
       return 0;
@@ -356,6 +410,22 @@ private:
     }
 
     this->traverseParentChildNodePairs(node->right, f);
+  }
+
+  void traverseNodes(
+      const std::unique_ptr<Node> &node, const Axis axis,
+      const std::function<void(const std::unique_ptr<Node> &, Axis)> &f) {
+    if (!node) {
+      return;
+    }
+
+    Axis newAxis = axis == Axis::X ? Axis::Y : Axis::X;
+
+    this->traverseNodes(node->left, newAxis, f);
+
+    f(node, axis);
+
+    this->traverseNodes(node->right, newAxis, f);
   }
 
 public:
@@ -408,6 +478,16 @@ public:
         this->currentSmallestDistance, this->currentVisited};
   }
 
+  RangeResult<C, V> *range(const Coordinates<C> &point, double range) {
+    if (root == nullptr) {
+      return nullptr;
+    }
+
+    RangeResult<C, V> *result = new RangeResult<C, V>;
+    this->calculateRange(*result, this->root, point, range, Axis::X);
+    return result;
+  }
+
   std::string toDot() {
     std::stringstream result;
     result << "digraph G {" << std::endl;
@@ -421,6 +501,35 @@ public:
         });
 
     result << "}";
+    return result.str();
+  }
+
+  std::string toCsv() {
+    std::stringstream result;
+    result << "x,y,axis" << std::endl;
+
+    this->traverseNodes(
+        this->root, Axis::X,
+        [&result](const std::unique_ptr<Node> &node, const Axis axis) {
+          result << node->point.x << "," << node->point.y << "," << axis
+                 << std::endl;
+        });
+
+    return result.str();
+  }
+
+  std::string toCsvWithParents() {
+    std::stringstream result;
+    result << "x,y,value,parent_x,parent_y" << std::endl;
+
+    this->traverseParentChildNodePairs(
+        this->root, [&result](const std::unique_ptr<Node> &parent,
+                              const std::unique_ptr<Node> &child) {
+          result << child->point.x << "," << child->point.y << ","
+                 << *child->value << "," << parent->point.x << ","
+                 << parent->point.y << std::endl;
+        });
+
     return result.str();
   }
 };

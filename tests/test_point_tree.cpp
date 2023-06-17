@@ -418,3 +418,31 @@ TEST(PointTree, RemoveNodeWithoutRightChild) {
 
   EXPECT_EQ(tree.count(), 16);
 }
+
+TEST(PointTree, RangeQuery1) {
+  PointValue<int, int> testValues[] = {
+      pv(72, 19, 27), pv(79, 51, 73), pv(4, 68, 6),   pv(91, 53, 65),
+      pv(77, 67, 30), pv(31, 67, 25), pv(29, 4, 86),  pv(36, 85, 56),
+      pv(69, 87, 83), pv(24, 43, 24), pv(81, 69, 94), pv(33, 99, 85),
+      pv(63, 75, 60), pv(86, 13, 39), pv(17, 78, 2),  pv(68, 70, 7)};
+
+  PointTree<int, int> tree(std::begin(testValues), std::end(testValues));
+
+  EXPECT_EQ(tree.count(), 16);
+
+  Coordinates<int> center{20, 40};
+  double range = 10;
+
+  RangeResult<int, int> *result = tree.range(center, range);
+
+  std::ofstream out("rangeSearchTest.csv");
+  out << tree.toCsvWithParents();
+  out.close();
+
+  EXPECT_EQ(result->size(), 1);
+
+  EXPECT_EQ(result->at(0).point.x, 24);
+  EXPECT_EQ(result->at(0).point.y, 43);
+  EXPECT_EQ(result->at(0).value, 24);
+  EXPECT_EQ(result->at(0).distance, 5);
+}
