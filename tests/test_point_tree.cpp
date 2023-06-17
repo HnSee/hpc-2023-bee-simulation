@@ -1,6 +1,7 @@
 #include <array>
 #include <cmath>
 #include <fstream>
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <iostream>
 #include <memory>
@@ -9,6 +10,15 @@
 #include <vector>
 
 #include "../src/utils/point_tree.hpp"
+#include "matchers.hpp"
+
+using testing::AllOf;
+using testing::ByRef;
+using testing::Contains;
+using testing::Eq;
+using testing::Field;
+using testing::Matcher;
+using testing::Not;
 
 template <typename C, typename V> PointValue<C, V> pv(C x, C y, V v) {
   return PointValue<C, V>(x, y, v);
@@ -435,7 +445,7 @@ TEST(PointTree, RangeQuery1) {
 
   RangeResult<int, int> *result = tree.range(center, range);
 
-  std::ofstream out("rangeSearchTest.csv");
+  std::ofstream out("rangeSearchTest1.csv");
   out << tree.toCsvWithParents();
   out.close();
 
@@ -445,4 +455,37 @@ TEST(PointTree, RangeQuery1) {
   EXPECT_EQ(result->at(0).point.y, 43);
   EXPECT_EQ(result->at(0).value, 24);
   EXPECT_EQ(result->at(0).distance, 5);
+}
+
+TEST(PointTree, RangeQuery2) {
+  PointValue<int, int> testValues[] = {
+      pv(90, 39, 34), pv(24, 53, 79), pv(13, 18, 90), pv(51, 69, 52),
+      pv(8, 54, 62),  pv(12, 9, 25),  pv(76, 59, 9),  pv(80, 85, 45),
+      pv(3, 52, 83),  pv(13, 70, 23), pv(6, 69, 0),   pv(95, 28, 52),
+      pv(78, 96, 35), pv(82, 31, 35), pv(45, 89, 42), pv(72, 87, 69)};
+
+  PointTree<int, int> tree(std::begin(testValues), std::end(testValues));
+
+  EXPECT_EQ(tree.count(), 16);
+
+  Coordinates<int> center{15, 70};
+  double range = 40;
+
+  RangeResult<int, int> *result = tree.range(center, range);
+
+  std::ofstream out("rangeSearchTest2.csv");
+  out << tree.toCsvWithParents();
+  out.close();
+
+  EXPECT_EQ(result->size(), 7);
+
+  EXPECT_THAT(*result, Contains(EqRangeResult(3, 52, 83)));
+  EXPECT_THAT(*result, Contains(EqRangeResult(6, 69, 0)));
+  EXPECT_THAT(*result, Contains(EqRangeResult(8, 54, 62)));
+  EXPECT_THAT(*result, Contains(EqRangeResult(13, 70, 23)));
+  EXPECT_THAT(*result, Contains(EqRangeResult(24, 53, 79)));
+  EXPECT_THAT(*result, Contains(EqRangeResult(45, 89, 42)));
+  EXPECT_THAT(*result, Contains(EqRangeResult(51, 69, 52)));
+
+  EXPECT_THAT(*result, Not(Contains(EqRangeResult(13, 18, 90))));
 }

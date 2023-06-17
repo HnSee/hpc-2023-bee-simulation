@@ -29,7 +29,9 @@ benchmarking_dep = benchmarking.get_variable('google_benchmark_dep')
 
 gtest = subproject('gtest')
 gtest_dep = gtest.get_variable('gtest_dep')
+gmock_dep = gtest.get_variable('gmock_dep')
 gtest_main_dep = gtest.get_variable('gtest_main_dep')
+
 
 exe = executable(
   'bee_simulation',
@@ -43,7 +45,7 @@ test_point_tree = executable(
   sources: [
     'tests/test_point_tree.cpp'
   ],
-  dependencies: [gtest_dep, gtest_main_dep]
+  dependencies: [gtest_dep, gmock_dep, gtest_main_dep]
 )
 
 test(
