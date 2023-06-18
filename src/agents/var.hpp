@@ -1,16 +1,19 @@
-#include "var.hpp"
+#ifndef BEESIMULATION_AGENTS_VAR_H
+#define BEESIMULATION_AGENTS_VAR_H
+
+#include "agent.hpp"
 
 // percentage that a scout continues after he didn't find any foodsource
-const int scoutindurance = 20;
+extern const int scoutindurance;
 
 // one tick = 1sec -> one day 12h -> 43200 ticks
-const int daylength = 43200;
+extern const int daylength;
 
 // speed of bee
-const float speed = 8;
+extern const float speed;
 
 // current day
-int day = 0; // 210 days a year
+extern int day; // 210 days a year
 
 // foreward declaration of classes
 // class agent;
@@ -19,7 +22,9 @@ int day = 0; // 210 days a year
 // class bee;
 
 // datastructure of agents
-std::vector<Agent *> agents;
+extern std::vector<Agent *> agents;
 
 // remove current element of vector
-bool removeagent = false;
+extern bool removeagent;
+
+#endif

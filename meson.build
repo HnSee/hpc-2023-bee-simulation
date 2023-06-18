@@ -11,6 +11,11 @@ project(
 src = [
   'src/main.cpp',
   'src/agents/agent.cpp',
+  'src/agents/bee.cpp',
+  'src/agents/flower.cpp',
+  'src/agents/hive.cpp',
+  'src/agents/hive_bee_access.cpp',
+  'src/agents/var.cpp',
   'src/world/generator.cpp',
   'src/world/worldstate.cpp',
   'src/extern/simplex/SimplexNoise.cpp'
@@ -32,7 +37,6 @@ gtest_dep = gtest.get_variable('gtest_dep')
 gmock_dep = gtest.get_variable('gmock_dep')
 gtest_main_dep = gtest.get_variable('gtest_main_dep')
 
-
 exe = executable(
   'bee_simulation',
   sources: src,
@@ -48,10 +52,31 @@ test_point_tree = executable(
   dependencies: [gtest_dep, gmock_dep, gtest_main_dep]
 )
 
+test_agents = executable(
+  'test_agents',
+  sources: [
+    'src/agents/agent.cpp',
+    'src/agents/bee.cpp',
+    'src/agents/flower.cpp',
+    'src/agents/hive.cpp',
+    'src/agents/hive_bee_access.cpp',
+    'src/agents/var.cpp',
+    'tests/test_agents.cpp'
+  ],
+  dependencies: [gtest_dep, gmock_dep, gtest_main_dep],
+)
+
 test(
   'point_tree',
   test_point_tree,
   args: '--gtest_color=yes'
+)
+
+test(
+  'agents',
+  test_agents,
+  args: '--gtest_color=yes',
+  timeout: 4000
 )
 
 bm_point_tree = executable(
