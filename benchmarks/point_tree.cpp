@@ -72,30 +72,6 @@ constructRandomTree(std::size_t nodes) {
   return randomTree;
 }
 
-// template <typename T>
-// static void constructRandomMatrix(CoordinateMatrix<T> &matrix,
-//                                   std::size_t size) {
-//   matrix = CoordinateMatrix<T>(size);
-
-//   std::random_device dev;
-//   std::mt19937 rng(dev());
-//   std::uniform_int_distribution<T> uniform;
-
-//   for (std::size_t i = 0; i < size; i++) {
-//     Coordinates newCoordinates = constructRandomCoordinates(0, size);
-//     T randomValue = uniform(rng);
-//     matrix.set(newCoordinates, randomValue);
-//   }
-// }
-
-// template <typename T> static T constructRandomValue() {
-//   std::random_device dev;
-//   std::mt19937 rng(dev());
-//   std::uniform_int_distribution<T> uniform;
-
-//   return uniform(rng);
-// }
-
 static void BM_Point_Tree_Init(benchmark::State &state) {
   for (auto _ : state) {
     state.PauseTiming();
@@ -190,6 +166,36 @@ static void BM_Point_Tree_Remove_Without_Balance(benchmark::State &state) {
   }
 }
 
+static void BM_Point_Tree_Range_With_Balance(benchmark::State &state) {
+  PointTree<CoordinateType, ValueType> tree;
+  for (auto _ : state) {
+    state.PauseTiming();
+    tree = constructRandomTree(state.range());
+    auto randomCoordinates = constructRandomCoordinates(0, 100);
+    const int range = 20;
+    state.ResumeTiming();
+
+    auto result = tree.range(randomCoordinates, range);
+  }
+}
+
+static void BM_Point_Tree_Range_Without_Balance(benchmark::State &state) {
+  for (auto _ : state) {
+    state.PauseTiming();
+    PointTree<CoordinateType, ValueType> tree;
+    int64_t size = state.range();
+    for (int64_t i = 0; i < size; ++i) {
+      auto randomCoordinatesValue = constructRandomPointValue(0, 100, 0, 100);
+      tree.add(randomCoordinatesValue);
+    }
+    auto randomCoordinates = constructRandomCoordinates(0, 100);
+    const int range = 20;
+    state.ResumeTiming();
+
+    auto result = tree.range(randomCoordinates, range);
+  }
+}
+
 // static void BM_MultiKeyMatrix_Insert(benchmark::State &state) {
 //   CoordinateMatrix<InnerMatrixType> matrix;
 //   int64_t lastSize = 0;
@@ -234,11 +240,11 @@ static void BM_Point_Tree_Remove_Without_Balance(benchmark::State &state) {
 //   }
 // }
 
-BENCHMARK(BM_Point_Tree_Init)->RangeMultiplier(2)->Range(2, 2 << 16);
+// BENCHMARK(BM_Point_Tree_Init)->RangeMultiplier(2)->Range(2, 2 << 16);
 
-BENCHMARK(BM_Point_Tree_Height)->RangeMultiplier(2)->Range(2, 2 << 16);
+// BENCHMARK(BM_Point_Tree_Height)->RangeMultiplier(2)->Range(2, 2 << 16);
 
-BENCHMARK(BM_Point_Tree_Nearest)->RangeMultiplier(2)->Range(2, 2 << 18);
+// BENCHMARK(BM_Point_Tree_Nearest)->RangeMultiplier(2)->Range(2, 2 << 18);
 
 BENCHMARK(BM_Point_Tree_Add_Without_Rebalance)
     ->RangeMultiplier(2)
@@ -253,6 +259,14 @@ BENCHMARK(BM_Point_Tree_Remove_Without_Balance)
     ->Range(2, 2 << 18);
 
 BENCHMARK(BM_Point_Tree_Remove_With_Balance)
+    ->RangeMultiplier(2)
+    ->Range(2, 2 << 18);
+
+BENCHMARK(BM_Point_Tree_Range_Without_Balance)
+    ->RangeMultiplier(2)
+    ->Range(2, 2 << 18);
+
+BENCHMARK(BM_Point_Tree_Range_With_Balance)
     ->RangeMultiplier(2)
     ->Range(2, 2 << 18);
 
