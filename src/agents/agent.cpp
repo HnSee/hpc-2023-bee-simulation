@@ -30,6 +30,11 @@ std::string Agent::gettype() {
 // frees the allocated memory
 void Agent::nuke() { std::cout << "This is an empty declaration! \n"; }
 
+std::ostream &operator<<(std::ostream &output, Agent &a) {
+  output << "[" << a.gettype() << "]";
+  return output;
+}
+
 Coordinates<double> getmovementvector(Coordinates<double> pos,
                                       Coordinates<double> target) {
   double x, y, pyt;

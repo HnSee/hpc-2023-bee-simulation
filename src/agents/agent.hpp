@@ -28,6 +28,8 @@ public:
 
   // frees the allocated memory
   virtual void nuke();
+
+  friend std::ostream &operator<<(std::ostream &output, Agent &a);
 };
 
 // returns the position of the agent 1 meter in one direction -> speed of agent
