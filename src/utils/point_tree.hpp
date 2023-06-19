@@ -48,7 +48,7 @@ template <typename C, typename V> struct PointValue {
   PointValue(C x, C y, V value) {
     this->point.x = x;
     this->point.y = y;
-    this->value = std::make_unique<V>(value);
+    this->value = std::make_shared<V>(value);
   }
 
   PointValue(Coordinates<C> point, std::shared_ptr<V> value) {
