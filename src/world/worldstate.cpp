@@ -11,7 +11,7 @@ std::pair<int, int> calculateClosestDivisors(int n) {
   while (n % a > 0)
     a -= 1;
 
-  return std::make_pair(a, n / a);
+  return std::make_pair(n / a, a);
 }
 
 ChunkBounds calcualteChunkBounds(int areaMaxX, int areaMaxY, int chunkCount,
@@ -23,13 +23,23 @@ ChunkBounds calcualteChunkBounds(int areaMaxX, int areaMaxY, int chunkCount,
   int chunkHeight = areaMaxY / chunkYCount;
 
   int chunkXIndex = chunkIndex % chunkXCount;
-  int chunkYIndex = chunkIndex / chunkYCount;
+  int chunkYIndex = chunkIndex / chunkXCount;
 
   ChunkBounds result;
   result.xMin = chunkWidth * chunkXIndex;
-  result.xMax = std::min(chunkWidth * (chunkXIndex + 1), areaMaxX);
   result.yMin = chunkHeight * chunkYIndex;
-  result.yMax = std::min(chunkHeight * (chunkYIndex + 1), areaMaxY);
+
+  if (chunkXIndex == chunkXCount - 1) {
+    result.xMax = areaMaxX;
+  } else {
+    result.xMax = chunkWidth * (chunkXIndex + 1);
+  }
+
+  if (chunkYIndex == chunkYCount - 1) {
+    result.yMax = areaMaxY;
+  } else {
+    result.yMax = chunkHeight * (chunkYIndex + 1);
+  }
 
   return result;
 }
