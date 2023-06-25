@@ -2,24 +2,21 @@
 #define BEESIMULATION_AGENTS_AGENT_H
 
 #include "../utils/point_tree.hpp"
+#include "agent_type.hpp"
 #include <iostream>
 
 class WorldState;
 
 class Agent {
 public:
-  // int x, y; -> if grid based, also int x,y
-  Agent(WorldState &state) : state(state) {}
-
-  // coordinates
-  Coordinates<double> pos;
+  Agent(WorldState &state, Coordinates<double> pos) : state(state), pos(pos) {}
 
   // initialization of the Agent, function has to initialize all necessary
   // variables
   virtual void init();
 
   // movement of the agent
-  virtual void move();
+  void move();
 
   // update of agent after move
   virtual void update();
@@ -27,14 +24,20 @@ public:
   virtual void specialinteraction();
 
   // returns int of class (look enum declaration)
-  virtual std::string gettype();
+  virtual AgentType gettype() const = 0;
 
   // frees the allocated memory
   virtual void nuke();
 
-  friend std::ostream &operator<<(std::ostream &output, Agent &a);
+  Coordinates<double> getPosition();
+
+  friend std::ostream &operator<<(std::ostream &output, const Agent &a);
 
   WorldState &state;
+
+protected:
+  // coordinates
+  Coordinates<double> pos;
 };
 
 // returns the position of the agent 1 meter in one direction -> speed of agent

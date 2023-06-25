@@ -1,45 +1,27 @@
 #include "worldstate.hpp"
+#include "../agents/bee.hpp"
+#include "../agents/flower.hpp"
+#include "../agents/hive.hpp"
+
+void WorldState::init(std::vector<AgentTemplate> &agents) {
+  for (AgentTemplate &a : agents) {
+    std::shared_ptr<Agent> newAgent;
+
+    switch (a.agentType) {
+    case AgentType::Hive:
+      newAgent = std::make_shared<Hive>(this, Coordinates<double>{0, 0});
+      break;
+    case AgentType::Flower:
+      newAgent = std::make_shared<Flower>(this, Coordinates<double>{0, 0});
+      break;
+    case AgentType::Bee:
+      newAgent = std::make_shared<Bee>(this, Coordinates<double>{0, 0});
+      break;
+    }
+  }
+}
 
 void WorldState::tick() {
   this->agents.traverse(
       [](const PointValue<double, Agent> &pv) { pv.value->update(); });
-}
-
-std::pair<int, int> calculateClosestDivisors(int n) {
-  int a = std::round(std::sqrt(n));
-
-  while (n % a > 0)
-    a -= 1;
-
-  return std::make_pair(n / a, a);
-}
-
-ChunkBounds calcualteChunkBounds(int areaMaxX, int areaMaxY, int chunkCount,
-                                 int chunkIndex) {
-  std::pair<int, int> chunks = calculateClosestDivisors(chunkCount);
-  int chunkXCount = chunks.first;
-  int chunkYCount = chunks.second;
-  int chunkWidth = areaMaxX / chunkXCount;
-  int chunkHeight = areaMaxY / chunkYCount;
-
-  int chunkXIndex = chunkIndex % chunkXCount;
-  int chunkYIndex = chunkIndex / chunkXCount;
-
-  ChunkBounds result;
-  result.xMin = chunkWidth * chunkXIndex;
-  result.yMin = chunkHeight * chunkYIndex;
-
-  if (chunkXIndex == chunkXCount - 1) {
-    result.xMax = areaMaxX;
-  } else {
-    result.xMax = chunkWidth * (chunkXIndex + 1);
-  }
-
-  if (chunkYIndex == chunkYCount - 1) {
-    result.yMax = areaMaxY;
-  } else {
-    result.yMax = chunkHeight * (chunkYIndex + 1);
-  }
-
-  return result;
 }

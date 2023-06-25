@@ -1,9 +1,7 @@
 #include "bee.hpp"
 
-void Bee::init(Coordinates<double> pos, Coordinates<double> hive,
-               Coordinates<double> destination, bool searching, bool worker,
-               HiveBeeAccess *hstore) {
-  this->pos = pos;
+void Bee::init(Coordinates<double> hive, Coordinates<double> destination,
+               bool searching, bool worker, HiveBeeAccess *hstore) {
   this->hivepos = hivepos;
   this->destination = destination;
   this->searching = searching;
@@ -55,10 +53,7 @@ void Bee::move() {
 
 void Bee::update() { return; }
 
-std::string Bee::gettype() {
-  std::string ret = "bee";
-  return ret;
-}
+AgentType Bee::gettype() const { return AgentType::Bee; }
 
 void Bee::nuke() {
   // std::cout << "removed bee\n";

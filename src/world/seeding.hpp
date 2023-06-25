@@ -1,0 +1,32 @@
+#ifndef BEESIMULATION_WORLD_SEEDING_H
+#define BEESIMULATION_WORLD_SEEDING_H
+
+#include <vector>
+
+#include "../agents/agent.hpp"
+#include "../agents/agent_type.hpp"
+#include "../agents/flower.hpp"
+#include "../agents/hive.hpp"
+
+struct SeedingConfiguration {
+  int seed;
+  int hiveCount;
+  int flowerCount;
+};
+
+struct AgentTemplate {
+  Coordinates<double> position;
+  AgentType agentType;
+
+  AgentTemplate(double x, double y, AgentType agentType)
+      : position(Coordinates<double>{x, y}), agentType(agentType) {}
+};
+
+std::vector<AgentTemplate> generateInitialAgents(int xMax, int yMax,
+                                                 SeedingConfiguration &config);
+
+std::vector<std::vector<AgentTemplate>>
+partitionInitialAgentsIntoChunks(std::vector<AgentTemplate> &initialAgents,
+                                 int areaMaxX, int areaMaxY, int chunkCount);
+
+#endif

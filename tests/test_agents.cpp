@@ -8,6 +8,7 @@
 #include "../src/agents/hive.hpp"
 #include "../src/agents/hive_bee_access.hpp"
 #include "../src/utils/point_tree.hpp"
+#include "../src/world/chunking.hpp"
 
 using testing::Eq;
 using testing::Gt;
@@ -15,13 +16,14 @@ using testing::Gt;
 TEST(Agents, CreatePointTree) {
   WorldGenerator generator;
   WorldMap *map = generator.generateWorld();
-  WorldState state(map);
+  WorldState state(map, ChunkBounds{0, 1000, 0, 1000});
 
-  std::shared_ptr<Hive> h = std::make_shared<Hive>(state);
+  std::shared_ptr<Hive> h =
+      std::make_shared<Hive>(state, Coordinates<double>{0, 0});
 
   h->init(40000, new HiveBeeAccess);
 
-  PointValue<double, Agent> hivePointValue(h->pos, h);
+  PointValue<double, Agent> hivePointValue(h->getPosition(), h);
   state.agents.add(hivePointValue);
 
   EXPECT_THAT(state.agents.count(), Eq(1));

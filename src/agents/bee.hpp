@@ -27,15 +27,14 @@ public:
   // position send to
   Coordinates<double> destination;
 
-  void init(Coordinates<double> pos, Coordinates<double> hive,
-            Coordinates<double> destination, bool searching, bool worker,
-            HiveBeeAccess *hstore);
+  void init(Coordinates<double> hive, Coordinates<double> destination,
+            bool searching, bool worker, HiveBeeAccess *hstore);
 
   void move();
 
   void update();
 
-  std::string gettype();
+  AgentType gettype() const;
 
   void nuke();
 };

@@ -28,7 +28,7 @@ public:
 
   void update();
 
-  std::string gettype();
+  AgentType gettype() const;
 
   void nuke();
 };

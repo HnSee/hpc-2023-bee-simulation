@@ -25,10 +25,7 @@ void Flower::update() {
   }
 }
 
-std::string Flower::gettype() {
-  std::string ret = "flower";
-  return ret;
-}
+AgentType Flower::gettype() const { return AgentType::Flower; }
 
 void Flower::nuke() {
   // std::cout << "removed flower\n";

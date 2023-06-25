@@ -35,8 +35,6 @@ void Hive::update() {
       // std::cout << "Scout: " << scoutpercentage << "  " << t << "\n";
       // scogut += 1;
 
-      std::shared_ptr<Bee> newBee = std::make_shared<Bee>(this->state);
-
       std::random_device rd;
       std::mt19937 e2(rd());
       std::uniform_real_distribution<double> unif(0, 1);
@@ -45,10 +43,11 @@ void Hive::update() {
       double randomX = unif(e2);
       double randomY = unif(e2);
       Coordinates<double> newBeePosition{randomX, randomY};
-      std::cout << std::setprecision(15) << newBeePosition.x << "|"
-                << newBeePosition.y << std::endl;
 
-      newBee->init(newBeePosition, Coordinates<double>{pos.x, pos.y},
+      std::shared_ptr<Bee> newBee =
+          std::make_shared<Bee>(this->state, newBeePosition);
+
+      newBee->init(Coordinates<double>{pos.x, pos.y},
                    Coordinates<double>{pos.x, pos.y}, true, false, hstore);
 
       PointValue<double, Agent> newPointValue(newBeePosition, newBee);
@@ -58,11 +57,12 @@ void Hive::update() {
       // worker += 1;int scout = 0;
       int worker = 0;
 
-      std::shared_ptr<Bee> newBee = std::make_shared<Bee>(this->state);
       Coordinates<double> newBeePosition{pos.x, pos.y};
+      std::shared_ptr<Bee> newBee =
+          std::make_shared<Bee>(this->state, newBeePosition);
 
-      newBee->init(newBeePosition, Coordinates<double>{pos.x, pos.y},
-                   hstore->rand_fs(), true, true, hstore);
+      newBee->init(Coordinates<double>{pos.x, pos.y}, hstore->rand_fs(), true,
+                   true, hstore);
 
       PointValue<double, Agent> newPointValue(newBeePosition, newBee);
       this->state.agents.add(newPointValue);
@@ -73,10 +73,7 @@ void Hive::update() {
   return;
 }
 
-std::string Hive::gettype() {
-  std::string ret = "hive";
-  return ret;
-}
+AgentType Hive::gettype() const { return AgentType::Hive; }
 
 void Hive::nuke() {
   // removeagent = true;
