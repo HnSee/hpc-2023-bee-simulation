@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include "world/generator.hpp"
+#include "world/worldstate.hpp"
 
 int main(int argc, char **argv) {
   cxxopts::Options options("BeeSimulation", "Agent-based simulation of bees");
@@ -32,6 +33,7 @@ int main(int argc, char **argv) {
     seed = (unsigned)time(NULL);
   }
 
+  // TODO: EXTERNALISE CONFIGURATION
   unsigned int edgeLength = result["e"].as<unsigned int>();
   unsigned int biomes = result["b"].as<unsigned int>();
   unsigned int relaxations = result["r"].as<unsigned int>();
@@ -47,6 +49,8 @@ int main(int argc, char **argv) {
   // spdlog::info("Generating world image...");
   // generator.generateWorldImage("output.svg");
   // spdlog::info("World image generated.");
+
+  // WorldState state(world);
 
   return EXIT_SUCCESS;
 }

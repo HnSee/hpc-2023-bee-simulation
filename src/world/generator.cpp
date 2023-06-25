@@ -43,22 +43,22 @@ WorldMap *WorldGenerator::generateWorld() {
 
   spdlog::debug("Generating voronoi representation of biomes...");
   this->generateVoronoiRepresentation();
-  this->generateVoronoiSVG("stage_1.svg");
+  // this->generateVoronoiSVG("stage_1.svg");
   spdlog::debug("Voronoi representation of biomes generated.");
 
   spdlog::debug("Rasterizing voronoi representation...");
   this->rasterizeVoronoiRepresentation();
-  this->generateBiomeRegionImage("stage_3.png");
+  // this->generateBiomeRegionImage("stage_3.png");
   spdlog::debug("Voronoi representation rasterized.");
 
   spdlog::debug("Blurring edges...");
   this->blurEdges();
-  this->generateBiomeRegionImage("stage_4.png");
+  // this->generateBiomeRegionImage("stage_4.png");
   spdlog::debug("Edges blurred.");
 
   spdlog::debug("Assigning biomes to regions...");
   this->assignBiomes();
-  this->generateWorldImageWithBiomeColor("stage_5.png");
+  // this->generateWorldImageWithBiomeColor("stage_5.png");
   spdlog::debug("Biomes assigned.");
 
   return &this->currentWorldMap;

@@ -62,9 +62,18 @@ test_agents = executable(
     'src/world/worldstate.cpp',
     'src/world/generator.cpp',
     'tests/test_agents.cpp',
-  'src/extern/simplex/SimplexNoise.cpp'
+    'src/extern/simplex/SimplexNoise.cpp'
   ],
-  dependencies: [gtest_dep, gmock_dep, gtest_main_dep, cairo_dep, spdlog_dep],
+  dependencies: [gtest_dep, gmock_dep, gtest_main_dep, cairo_dep, spdlog_dep]
+)
+
+test_worldstate = executable(
+  'test_worldstate',
+  sources: [
+    'src/world/worldstate.cpp',
+    'tests/test_worldstate.cpp',
+  ],
+  dependencies: [gtest_dep, gtest_main_dep]
 )
 
 test(
@@ -78,6 +87,12 @@ test(
   test_agents,
   args: '--gtest_color=yes',
   timeout: 4000
+)
+
+test(
+  'worldstate',
+  test_worldstate,
+  args: '--gtest_color=yes'
 )
 
 bm_point_tree = executable(
