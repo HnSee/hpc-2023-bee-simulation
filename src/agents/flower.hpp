@@ -1,11 +1,14 @@
 #ifndef BEESIMULATION_AGENTS_FLOWER_H
 #define BEESIMULATION_AGENTS_FLOWER_H
 
+#include "../world/worldstate.hpp"
 #include "agent.hpp"
 #include "hive_bee_access.hpp"
 
 class Flower : public Agent {
 public:
+  using Agent::Agent;
+
   // how long a flower produces food closer to one -> longer blooming ( 1=
   // blooming forever )
   double bloomlength;

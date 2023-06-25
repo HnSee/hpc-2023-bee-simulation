@@ -4,9 +4,12 @@
 #include "../utils/point_tree.hpp"
 #include <iostream>
 
+class WorldState;
+
 class Agent {
 public:
   // int x, y; -> if grid based, also int x,y
+  Agent(WorldState &state) : state(state) {}
 
   // coordinates
   Coordinates<double> pos;
@@ -30,6 +33,8 @@ public:
   virtual void nuke();
 
   friend std::ostream &operator<<(std::ostream &output, Agent &a);
+
+  WorldState &state;
 };
 
 // returns the position of the agent 1 meter in one direction -> speed of agent

@@ -240,35 +240,35 @@ static void BM_Point_Tree_Range_Without_Balance(benchmark::State &state) {
 //   }
 // }
 
-// BENCHMARK(BM_Point_Tree_Init)->RangeMultiplier(2)->Range(2, 2 << 16);
+BENCHMARK(BM_Point_Tree_Init)->RangeMultiplier(2)->Range(2, 2 << 16);
 
 // BENCHMARK(BM_Point_Tree_Height)->RangeMultiplier(2)->Range(2, 2 << 16);
 
 // BENCHMARK(BM_Point_Tree_Nearest)->RangeMultiplier(2)->Range(2, 2 << 18);
 
-BENCHMARK(BM_Point_Tree_Add_Without_Rebalance)
-    ->RangeMultiplier(2)
-    ->Range(2, 2 << 18);
+// BENCHMARK(BM_Point_Tree_Add_Without_Rebalance)
+//     ->RangeMultiplier(2)
+//     ->Range(2, 2 << 18);
 
-BENCHMARK(BM_Point_Tree_Add_With_Rebalance)
-    ->RangeMultiplier(2)
-    ->Range(2, 2 << 18);
+// BENCHMARK(BM_Point_Tree_Add_With_Rebalance)
+//     ->RangeMultiplier(2)
+//     ->Range(2, 2 << 18);
 
-BENCHMARK(BM_Point_Tree_Remove_Without_Balance)
-    ->RangeMultiplier(2)
-    ->Range(2, 2 << 18);
+// BENCHMARK(BM_Point_Tree_Remove_Without_Balance)
+//     ->RangeMultiplier(2)
+//     ->Range(2, 2 << 18);
 
-BENCHMARK(BM_Point_Tree_Remove_With_Balance)
-    ->RangeMultiplier(2)
-    ->Range(2, 2 << 18);
+// BENCHMARK(BM_Point_Tree_Remove_With_Balance)
+//     ->RangeMultiplier(2)
+//     ->Range(2, 2 << 18);
 
-BENCHMARK(BM_Point_Tree_Range_Without_Balance)
-    ->RangeMultiplier(2)
-    ->Range(2, 2 << 18);
+// BENCHMARK(BM_Point_Tree_Range_Without_Balance)
+//     ->RangeMultiplier(2)
+//     ->Range(2, 2 << 18);
 
-BENCHMARK(BM_Point_Tree_Range_With_Balance)
-    ->RangeMultiplier(2)
-    ->Range(2, 2 << 18);
+// BENCHMARK(BM_Point_Tree_Range_With_Balance)
+//     ->RangeMultiplier(2)
+//     ->Range(2, 2 << 18);
 
 // BENCHMARK(BM_MultiKeyMatrix_Insert)
 //     ->RangeMultiplier(2)

@@ -1,7 +1,7 @@
 #include "hive_bee_access.hpp"
 
-int scout = 0;
-int worker = 0;
+// int scout = 0;
+// int worker = 0;
 
 void HiveBeeAccess::addfood(int x) { foodstore = foodstore + x; }
 
@@ -37,27 +37,27 @@ Coordinates<double> HiveBeeAccess::rand_fs() {
   return foodsources.at(r);
 }
 
-bool check_agent_removal(int j) {
-  if (removeagent == true) {
-    agents[j] = agents[agents.size() - 1];
-    agents.pop_back();
-    removeagent = false;
-    return true;
-  }
-  return false;
-}
+// bool check_agent_removal(int j) {
+//   if (removeagent == true) {
+//     agents[j] = agents[agents.size() - 1];
+//     agents.pop_back();
+//     removeagent = false;
+//     return true;
+//   }
+//   return false;
+// }
 
-// one move
-void tick(int j) {
-  agents[j]->move();
+// // one move
+// void tick(int j) {
+//   agents[j]->move();
 
-  if (check_agent_removal(j)) {
-    return;
-  }
+//   if (check_agent_removal(j)) {
+//     return;
+//   }
 
-  agents[j]->update();
+//   agents[j]->update();
 
-  if (check_agent_removal(j)) {
-    return;
-  }
-}
+//   if (check_agent_removal(j)) {
+//     return;
+//   }
+// }

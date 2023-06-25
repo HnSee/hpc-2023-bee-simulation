@@ -15,7 +15,6 @@ src = [
   'src/agents/flower.cpp',
   'src/agents/hive.cpp',
   'src/agents/hive_bee_access.cpp',
-  'src/agents/var.cpp',
   'src/world/generator.cpp',
   'src/world/worldstate.cpp',
   'src/extern/simplex/SimplexNoise.cpp'
@@ -60,10 +59,12 @@ test_agents = executable(
     'src/agents/flower.cpp',
     'src/agents/hive.cpp',
     'src/agents/hive_bee_access.cpp',
-    'src/agents/var.cpp',
-    'tests/test_agents.cpp'
+    'src/world/worldstate.cpp',
+    'src/world/generator.cpp',
+    'tests/test_agents.cpp',
+  'src/extern/simplex/SimplexNoise.cpp'
   ],
-  dependencies: [gtest_dep, gmock_dep, gtest_main_dep],
+  dependencies: [gtest_dep, gmock_dep, gtest_main_dep, cairo_dep, spdlog_dep],
 )
 
 test(

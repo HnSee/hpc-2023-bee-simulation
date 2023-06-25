@@ -11,14 +11,15 @@ void Flower::move() { return; }
 
 void Flower::update() {
   int storesize = size;
-  size += maxproduction / (pow(bloomlength, abs(day - peak)));
+  size += maxproduction / (pow(bloomlength, abs(this->state.day - peak)));
 
   // std::cout << day << "\n";
   // std::cout << (int) (maxproduction / ( pow(bloomlength, abs(day-peak))) )
   // << "\n";
 
-  if ((int)(maxproduction / (pow(bloomlength, abs(day - peak)))) == 0 &&
-      day > peak) {
+  if ((int)(maxproduction / (pow(bloomlength, abs(this->state.day - peak)))) ==
+          0 &&
+      this->state.day > peak) {
     nuke();
     return;
   }
@@ -31,6 +32,6 @@ std::string Flower::gettype() {
 
 void Flower::nuke() {
   // std::cout << "removed flower\n";
-  removeagent = true;
-  delete this;
+  // removeagent = true;
+  // delete this;
 }

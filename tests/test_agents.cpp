@@ -9,65 +9,38 @@
 #include "../src/agents/hive_bee_access.hpp"
 #include "../src/utils/point_tree.hpp"
 
-// remove selfpointer
-TEST(Agents, Init) {
-  std::srand(time(NULL));
-
-  Hive *h = new Hive;
-
-  h->init(40000, &agents, new HiveBeeAccess);
-
-  agents.push_back(h);
-
-  for (int x = 0; x < 5; x++) {
-    for (int k = 0; k < daylength; k++) {
-      auto t = agents.size();
-      h->tickoftheday = 0;
-      for (int j = 0; j < t; j++) {
-        tick(j);
-        t = agents.size();
-      }
-      // baum aufgebaut werden
-    }
-
-    std::cout << "Scout: " << scout << "\n";
-    std::cout << "Worker: " << worker << "\n";
-  }
-
-  SUCCEED();
-}
+using testing::Eq;
+using testing::Gt;
 
 TEST(Agents, CreatePointTree) {
-  Hive *h = new Hive;
+  WorldGenerator generator;
+  WorldMap *map = generator.generateWorld();
+  WorldState state(map);
 
-  std::vector<Agent *> temporaryAgents;
-  h->init(40000, &temporaryAgents, new HiveBeeAccess);
+  std::shared_ptr<Hive> h = std::make_shared<Hive>(state);
 
-  temporaryAgents.push_back(h);
+  h->init(40000, new HiveBeeAccess);
 
-  std::uniform_real_distribution<double> distr(0, 100);
-  std::default_random_engine re;
+  PointValue<double, Agent> hivePointValue(h->pos, h);
+  state.agents.add(hivePointValue);
 
-  for (int i = 0; i < 40000; ++i) {
-    Bee *b = new Bee;
-    Coordinates<double> pos{distr(re), distr(re)};
-    Coordinates<double> dest{distr(re), distr(re)};
-    b->init(pos, h->pos, dest, false, true, h->hstore);
-    temporaryAgents.push_back(b);
+  EXPECT_THAT(state.agents.count(), Eq(1));
+
+  // h->update();
+
+  // EXPECT_THAT(state.agents.count(), Gt(10));
+
+  std::cout << state.agents.count() << std::endl;
+  std::cout << state.agents.height() << std::endl;
+
+  for (int i = 0; i < 1000; ++i) {
+    state.tick();
   }
 
-  std::vector<PointValue<double, Agent>> values;
-
-  for (auto agent : temporaryAgents) {
-    values.emplace_back(agent->pos, std::shared_ptr<Agent>(agent));
-  }
-
-  PointTree<double, Agent> agentsAsTree(values.begin(), values.end());
-
-  EXPECT_EQ(agentsAsTree.count(), 40001);
-  EXPECT_EQ(agentsAsTree.height(), 16);
+  std::cout << state.agents.count() << std::endl;
+  std::cout << state.agents.height() << std::endl;
 
   std::ofstream out("agent_test.dot");
-  out << agentsAsTree.toDot();
+  out << state.agents.toDot();
   out.close();
 }

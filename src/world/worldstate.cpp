@@ -1,3 +1,6 @@
 #include "worldstate.hpp"
 
-WorldState::WorldState(WorldMap map) { this->map = map; }
+void WorldState::tick() {
+  this->agents.traverse(
+      [](const PointValue<double, Agent> &pv) { pv.value->update(); });
+}

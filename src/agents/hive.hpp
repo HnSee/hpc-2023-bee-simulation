@@ -1,11 +1,14 @@
 #ifndef BEESIMULATION_AGENTS_HIVE_H
 #define BEESIMULATION_AGENTS_HIVE_H
 
+#include "../world/worldstate.hpp"
 #include "agent.hpp"
 #include "hive_bee_access.hpp"
 
 class Hive : public Agent {
 public:
+  using Agent::Agent;
+
   // place where the food is stored
   HiveBeeAccess *hstore;
 
@@ -18,7 +21,7 @@ public:
   // all the bees belonging to the hive
   int totalbees;
 
-  void init(int totalbees, std::vector<Agent *> *ds, HiveBeeAccess *hstore);
+  void init(int totalbees, HiveBeeAccess *hstore);
 
   void move();
 

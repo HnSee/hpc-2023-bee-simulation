@@ -36,7 +36,7 @@ void Bee::move() {
       // if scout reaches destination and doesnt find anything then the scout
       // either generates next location or returns
       if (pos.x == destination.x && pos.y == destination.y) {
-        if (scoutindurance > std::rand() % 101) {
+        if (this->state.config.scoutindurance > std::rand() % 101) {
           destination.x += (std::rand() % 2000) - 1000;
           destination.y += (std::rand() % 2000) - 1000;
         } else {
@@ -62,7 +62,7 @@ std::string Bee::gettype() {
 
 void Bee::nuke() {
   // std::cout << "removed bee\n";
-  hstore->activebees -= 1;
-  removeagent = true;
-  delete this;
+  // hstore->activebees -= 1;
+  // removeagent = true;
+  // delete this;
 }

@@ -1,14 +1,10 @@
 #ifndef BEESIMULATION_AGENTS_HIVE_BEE_ACCESS_H
 #define BEESIMULATION_AGENTS_HIVE_BEE_ACCESS_H
 
+#include "../utils/point_tree.hpp"
 #include <cmath>
 #include <iostream>
 #include <vector>
-
-#include "var.hpp"
-
-extern int scout;
-extern int worker; 
 
 // place where the hive stores the food
 class HiveBeeAccess {

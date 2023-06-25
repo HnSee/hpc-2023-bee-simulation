@@ -1,11 +1,14 @@
 #ifndef BEESIMULATION_AGENTS_BEE_H
 #define BEESIMULATION_AGENTS_BEE_H
 
+#include "../world/worldstate.hpp"
 #include "agent.hpp"
 #include "hive_bee_access.hpp"
 
 class Bee : public Agent {
 public:
+  using Agent::Agent;
+
   // hiveptr
   HiveBeeAccess *hstore;
 
