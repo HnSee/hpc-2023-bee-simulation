@@ -78,6 +78,13 @@ test_agents = executable(
 test_worldstate = executable(
   'test_worldstate',
   sources: [
+    'src/agents/agent.cpp',
+    'src/agents/agent_type.cpp',
+    'src/agents/bee.cpp',
+    'src/agents/flower.cpp',
+    'src/agents/hive.cpp',
+    'src/agents/hive_bee_access.cpp',
+    'src/world/chunking.cpp',
     'src/world/worldstate.cpp',
     'tests/test_worldstate.cpp',
   ],

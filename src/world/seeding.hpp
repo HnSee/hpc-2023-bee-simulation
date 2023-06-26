@@ -5,8 +5,6 @@
 
 #include "../agents/agent.hpp"
 #include "../agents/agent_type.hpp"
-#include "../agents/flower.hpp"
-#include "../agents/hive.hpp"
 
 struct SeedingConfiguration {
   int seed;
