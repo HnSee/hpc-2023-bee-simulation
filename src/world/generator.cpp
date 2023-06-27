@@ -4,9 +4,12 @@
 #include "generator.hpp"
 #include "../extern/jc_voronoi.h"
 #include "../extern/simplex/SimplexNoise.h"
+
+#include <algorithm>
 #include <cairomm/context.h>
 #include <cairomm/surface.h>
 #include <cstring>
+#include <iterator>
 #include <random>
 #include <spdlog/spdlog.h>
 #include <sstream>
@@ -37,7 +40,7 @@ static void relax_points(const jcv_diagram *diagram, jcv_point *points) {
   }
 }
 
-WorldMap *WorldGenerator::generateWorld() {
+WorldMap WorldGenerator::generateWorld() {
   this->currentZoom = this->initialZoom;
   srand(this->seed);
 
@@ -61,7 +64,7 @@ WorldMap *WorldGenerator::generateWorld() {
   // this->generateWorldImageWithBiomeColor("stage_5.png");
   spdlog::debug("Biomes assigned.");
 
-  return &this->currentWorldMap;
+  return this->currentWorldMap;
 }
 
 void WorldGenerator::generateVoronoiRepresentation() {
@@ -324,4 +327,28 @@ void WorldGenerator::generateWorldImageWithBiomeColor(std::string outputPath) {
   }
 
   surface->write_to_png(outputPath);
+}
+
+std::pair<WorldCell *, std::size_t> serializeWorldMap(WorldMap &map) {
+  std::vector<WorldCell> flatMap = std::accumulate(
+      map.begin(), map.end(), std::vector<WorldCell>(),
+      [](std::vector<WorldCell> &c1, std::vector<WorldCell> &c2) {
+        c1.insert(c1.end(), c2.begin(), c2.end());
+        return c1;
+      });
+
+  return std::make_pair(flatMap.data(), flatMap.size());
+}
+
+WorldMap deserializeWorldMap(std::pair<WorldCell *, std::size_t> &map,
+                             std::size_t rowSize) {
+  WorldMap result;
+
+  spdlog::debug("size: {}, rowSize: {}", map.second, rowSize);
+  
+  for (WorldCell *i = map.first; i < map.first + map.second; i += rowSize) {
+    result.push_back(std::vector<WorldCell>(i, i + rowSize));
+  }
+
+  return result;
 }

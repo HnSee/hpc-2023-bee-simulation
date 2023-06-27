@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 enum Biome { Field, Meadow, City, Waters, Forest };
@@ -23,7 +24,7 @@ class WorldGenerator {
 public:
   // TODO: move settings in this constructor instead of hardcoded values below
   // WorldGenerator();
-  WorldMap *generateWorld();
+  WorldMap generateWorld();
 
 private:
   // Settings
@@ -63,5 +64,8 @@ private:
   void generateBiomeRegionImage(std::string outputPath);
   void generateWorldImageWithBiomeColor(std::string outputPath);
 };
+
+std::pair<WorldCell *, std::size_t> serializeWorldMap(WorldMap &map);
+WorldMap deserializeWorldMap(std::pair<WorldCell *, std::size_t> &map, std::size_t rowSize);
 
 #endif

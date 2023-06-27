@@ -15,8 +15,8 @@ using testing::Gt;
 
 TEST(Agents, CreatePointTree) {
   WorldGenerator generator;
-  WorldMap *map = generator.generateWorld();
-  WorldState state(map, ChunkBounds{0, 1000, 0, 1000});
+  WorldMap map = generator.generateWorld();
+  WorldState state(&map, ChunkBounds{0, 1000, 0, 1000});
 
   std::shared_ptr<Hive> h =
       std::make_shared<Hive>(state, Coordinates<double>{0, 0});
