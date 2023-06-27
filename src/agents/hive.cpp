@@ -16,22 +16,20 @@ void Hive::init(int totalbees, HiveBeeAccess *hstore) {
 
 // collecting the bees
 void Hive::move() {  
-  this->state.agents.range( pos, 0.1 );
   
-  /*
-  RangeResult<double, Agent> *result = 
+  RangeResult<double, Agent> *result = this->state.agents.range( pos, 0.1 );
   int size = result->size();
 
   for(int k = 0; k < size; k++){
     if( result->at(k).value->gettype() == AgentType::Bee ){
 
-      //std::shared_ptr<Agent> a = result->at(k).value;
-      //PointValue<double, Agent> p = PointValue<double, Agent>(  result->at(k).value->pos, a );
+      std::shared_ptr<Agent> a = result->at(k).value;
+      PointValue<double, Agent> p = PointValue<double, Agent>(  result->at(k).value->pos, a );
       //this->state.agents.removeByPointValue( p );
     }
     //
   }
-  */
+
 
   return;
 }
