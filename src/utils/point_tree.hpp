@@ -103,8 +103,7 @@ private:
     }
 
     friend bool operator==(const Node &n, const PointValue<C, V> &pv) {
-      return n.point.x == pv.point.x && n.point.y == pv.point.y &&
-             *n.value == *pv.value;
+      return n.point.x == pv.point.x && n.point.y == pv.point.y && n.value == pv.value;
     }
   };
 

@@ -25,7 +25,7 @@ void Hive::move() {
 
       std::shared_ptr<Agent> a = result->at(k).value;
       PointValue<double, Agent> p = PointValue<double, Agent>(  result->at(k).value->pos, a );
-      //this->state.agents.removeByPointValue( p );
+      this->state.agents.removeByPointValue( p );
     }
     //
   }
