@@ -23,7 +23,6 @@ void Bee::move() {
 
       if (pos.x == hivepos.x && pos.y == hivepos.y) {
         hstore->addfood(food);
-        nuke();
       }
     }
   } else {
@@ -45,7 +44,6 @@ void Bee::move() {
       pos = getmovementvector(pos, hivepos);
       if (pos.x == hivepos.x && pos.y == hivepos.y) {
         hstore->add_fs(destination);
-        nuke();
       }
     }
   }
@@ -54,10 +52,3 @@ void Bee::move() {
 void Bee::update() { return; }
 
 AgentType Bee::gettype() const { return AgentType::Bee; }
-
-void Bee::nuke() {
-  // std::cout << "removed bee\n";
-  // hstore->activebees -= 1;
-  // removeagent = true;
-  // delete this;
-}

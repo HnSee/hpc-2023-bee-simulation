@@ -36,28 +36,3 @@ Coordinates<double> HiveBeeAccess::rand_fs() {
 
   return foodsources.at(r);
 }
-
-// bool check_agent_removal(int j) {
-//   if (removeagent == true) {
-//     agents[j] = agents[agents.size() - 1];
-//     agents.pop_back();
-//     removeagent = false;
-//     return true;
-//   }
-//   return false;
-// }
-
-// // one move
-// void tick(int j) {
-//   agents[j]->move();
-
-//   if (check_agent_removal(j)) {
-//     return;
-//   }
-
-//   agents[j]->update();
-
-//   if (check_agent_removal(j)) {
-//     return;
-//   }
-// }

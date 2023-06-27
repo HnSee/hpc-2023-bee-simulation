@@ -20,15 +20,8 @@ void Flower::update() {
   if ((int)(maxproduction / (pow(bloomlength, abs(this->state.day - peak)))) ==
           0 &&
       this->state.day > peak) {
-    nuke();
     return;
   }
 }
 
 AgentType Flower::gettype() const { return AgentType::Flower; }
-
-void Flower::nuke() {
-  // std::cout << "removed flower\n";
-  // removeagent = true;
-  // delete this;
-}

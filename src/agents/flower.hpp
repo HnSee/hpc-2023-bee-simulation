@@ -29,8 +29,6 @@ public:
   void update();
 
   AgentType gettype() const;
-
-  void nuke();
 };
 
 #endif

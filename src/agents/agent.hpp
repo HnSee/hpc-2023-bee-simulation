@@ -26,9 +26,6 @@ public:
   // returns int of class (look enum declaration)
   virtual AgentType gettype() const = 0;
 
-  // frees the allocated memory
-  virtual void nuke();
-
   Coordinates<double> getPosition();
 
   friend std::ostream &operator<<(std::ostream &output, const Agent &a);
