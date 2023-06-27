@@ -35,9 +35,17 @@ Coordinates<double> getmovementvector(Coordinates<double> pos,
   y = target.y - pos.y;
   pyt = sqrt(x * x + y * y);
 
+  std::random_device rd;
+  std::mt19937 e2(rd());
+  std::uniform_real_distribution<double> unif(0, 0.01);
+
+  // Getting a random double value
+  double randomX = unif(e2);
+  double randomY = unif(e2);
+
   if (pyt < 1) {
-    return Coordinates<double>{pos.x + x, pos.y + y};
+    return Coordinates<double>{pos.x + x + randomX, pos.y + y + randomY};
   } else {
-    return Coordinates<double>{pos.x + x / pyt, pos.y + y / pyt};
+    return Coordinates<double>{pos.x + x / pyt + randomX, pos.y + y / pyt + randomY};
   }
 }
