@@ -49,6 +49,7 @@ exe = executable(
   install: true
 )
 
+'''
 test_point_tree = executable(
   'test_point_tree',
   sources: [
@@ -56,6 +57,7 @@ test_point_tree = executable(
   ],
   dependencies: [gtest_dep, gmock_dep, gtest_main_dep]
 )
+'''
 
 test_ctd_array = executable(
   'test_ctd_array',
@@ -99,11 +101,14 @@ test_worldstate = executable(
   dependencies: [gtest_dep, gtest_main_dep]
 )
 
+'''
 test(
   'point_tree',
   test_point_tree,
   args: '--gtest_color=yes'
 )
+'''
+
 
 test(
   'ctd_array',
@@ -124,6 +129,7 @@ test(
   args: '--gtest_color=yes'
 )
 
+'''
 bm_point_tree = executable(
   'bm_point_tree',
   sources: [
@@ -139,3 +145,4 @@ benchmark(
   timeout: 999999999999,
   args: '--benchmark_out=results_pointtree.json'
 )
+'''

@@ -32,7 +32,6 @@ public:
 
   WorldState &state;
 
-protected:
   // coordinates
   Coordinates<double> pos;
 };

@@ -66,11 +66,11 @@ template <typename C, typename V> struct NearestResult {
 
 template <typename C, typename V> struct PartialRangeResult {
   Coordinates<C> point;
-  V &value;
+  std::shared_ptr<V> value;
   double distance;
 
 public:
-  PartialRangeResult(Coordinates<C> point, V &value, double distance)
+  PartialRangeResult(Coordinates<C> point, std::shared_ptr<V> value, double distance)
       : point(point), value(value), distance(distance) {}
 };
 
@@ -347,7 +347,7 @@ private:
 
     double distance = point.getDistanceTo(currentNode->point);
     if (distance <= range) {
-      result.emplace_back(currentNode->point, *currentNode->value, distance);
+      result.emplace_back(currentNode->point, currentNode->value, distance);
     }
 
     Axis nextAxis = currentAxis == Axis::X ? Axis::Y : Axis::X;
