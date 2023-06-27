@@ -224,6 +224,7 @@ void WorldGenerator::blurEdges() {
   double resolution = 32;
   double scale = (double)this->size / resolution;
 
+#pragma omp parallel for
   for (std::size_t i = 0; i < displacementMap.size(); i++) {
     for (std::size_t j = 0; j < displacementMap[i].size(); j++) {
       displacementMap[i][j] = std::pair<int, int>(
@@ -239,6 +240,7 @@ void WorldGenerator::blurEdges() {
     }
   }
 
+#pragma omp parallel for
   for (std::size_t x = 0; x < displacementMap.size(); x++) {
     for (std::size_t y = 0; y < displacementMap[x].size(); y++) {
       newMap[x][y] =
@@ -274,12 +276,17 @@ void WorldGenerator::assignBiomes() {
       biomeDistributionProbability.begin(), biomeDistributionProbability.end());
 
   // Collect biome representations
+#pragma omp parallel for
   for (std::size_t x = 0; x < this->size; x++) {
     for (std::size_t y = 0; y < this->size; y++) {
       BiomeRegionIdentifier cellValue = this->currentWorldBiomeRegions[x][y];
-      auto biome = biomeMap.insert(std::pair<BiomeRegionIdentifier, Biome>(
-          cellValue, Biome(biomeDistribution(gen) % biomeCount)));
-      this->currentWorldMap[x][y] = (WorldCell)biome.first->second;
+      std::pair<BiomeRegionIdentifier, Biome> biomeIdToBiome(
+          cellValue, Biome(biomeDistribution(gen) % biomeCount));
+#pragma omp critical
+      {
+        auto biome = biomeMap.insert(biomeIdToBiome);
+        this->currentWorldMap[x][y] = (WorldCell)biome.first->second;
+      }
     }
   }
 }
@@ -344,8 +351,6 @@ WorldMap deserializeWorldMap(std::pair<WorldCell *, std::size_t> &map,
                              std::size_t rowSize) {
   WorldMap result;
 
-  spdlog::debug("size: {}, rowSize: {}", map.second, rowSize);
-  
   for (WorldCell *i = map.first; i < map.first + map.second; i += rowSize) {
     result.push_back(std::vector<WorldCell>(i, i + rowSize));
   }

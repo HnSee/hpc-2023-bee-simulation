@@ -29,7 +29,7 @@ public:
 private:
   // Settings
   unsigned int seed = 123123123;
-  unsigned int size = 1024;
+  unsigned int size = 10000;
   unsigned int biomes = 512;
   unsigned short relaxations = 4;
   // double perlinPersistence = 0.5;
