@@ -57,6 +57,14 @@ test_point_tree = executable(
   dependencies: [gtest_dep, gmock_dep, gtest_main_dep]
 )
 
+test_ctd_array = executable(
+  'test_ctd_array',
+  sources: [
+    'tests/test_ctd_array.cpp'
+  ],
+  dependencies: [gtest_dep, gmock_dep, gtest_main_dep]
+)
+
 test_agents = executable(
   'test_agents',
   sources: [
@@ -94,6 +102,12 @@ test_worldstate = executable(
 test(
   'point_tree',
   test_point_tree,
+  args: '--gtest_color=yes'
+)
+
+test(
+  'ctd_array',
+  test_ctd_array,
   args: '--gtest_color=yes'
 )
 

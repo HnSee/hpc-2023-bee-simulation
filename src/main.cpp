@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
   options.add_options()("v,verbose", "Enable debug logging",
                         cxxopts::value<bool>()->default_value("false"))(
       "e,edge-length", "Edge length of the map",
-      cxxopts::value<unsigned int>()->default_value("10000"))(
+      cxxopts::value<unsigned int>()->default_value("1000"))(
       "b,biomes", "Number of biomes to generate",
       cxxopts::value<unsigned int>()->default_value("100"))(
       "r,relaxations", "Number of relaxations to perform",
@@ -71,9 +71,8 @@ int main(int argc, char **argv) {
   spdlog::debug("Initialized MPI process {}", rank);
 
   // Build world map
-  WorldMap world;
-  WorldCell *worldSerialized;
-  std::size_t worldSerializedSize;
+  std::unique_ptr<WorldMap> world;
+  std::size_t worldCellCount;
   if (rank == 0) {
     spdlog::debug("Starting world generator...");
     WorldGenerator generator;
@@ -83,49 +82,42 @@ int main(int argc, char **argv) {
     world = generator.generateWorld();
     spdlog::info("World generated.");
 
-    std::pair<WorldCell *, std::size_t> worldSerializedResult =
-        serializeWorldMap(world);
-    worldSerialized = worldSerializedResult.first;
-    worldSerializedSize = worldSerializedResult.second;
+    worldCellCount = world->count();
   }
 
   if (rank == 0) {
-    spdlog::debug("Sending map size ({}) to other processes...",
-                  worldSerializedSize);
+    spdlog::debug("Sending map cell count ({}) to other processes...",
+                  worldCellCount);
   }
-  MPI_Bcast(&worldSerializedSize, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&worldCellCount, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
 
   if (rank != 0) {
-    worldSerialized = new WorldCell[worldSerializedSize];
+    world = std::make_unique<WorldMap>(edgeLength, edgeLength);
+    spdlog::debug("Reserved world map memory in {} (size: {} bytes, {} x {})",
+                  rank, world->size(), world->dimensions().first,
+                  world->dimensions().second);
   }
 
   if (rank == 0) {
-    spdlog::debug("Sending map to other processes...",
-                  worldSerializedSize);
+    spdlog::debug("Sending map to other processes...");
   }
-  MPI_Bcast(worldSerialized, worldSerializedSize, MPI_INT, 0, MPI_COMM_WORLD);
+  MPI_Bcast(world->get(), static_cast<int>(worldCellCount), MPI_INT, 0,
+            MPI_COMM_WORLD);
   if (rank == 0) {
-    spdlog::debug("Map sent. Size: {}.", worldSerializedSize);
+    spdlog::debug("Map sent. Cell count: {}.", worldCellCount);
   } else {
-    spdlog::debug("Map received. Size: {}.", worldSerializedSize);
-
-    spdlog::debug("Deserializing map...");
-    std::pair<WorldCell *, std::size_t> serializedMapData =
-        std::make_pair(worldSerialized, worldSerializedSize);
-    world = deserializeWorldMap(serializedMapData, edgeLength);
-    spdlog::debug("Map deserialized.");
+    spdlog::debug("Map received. Size: {}.", worldCellCount);
+    world->updateDimensions(edgeLength, edgeLength);
   }
 
-  std::stringstream fileName;
-  fileName << "map_from_rank_" << rank << ".txt";
-  std::ofstream f(fileName.str());
-  for (auto &r : world) {
-    for (auto &c : r) {
-      f << c << " ";
-    }
-    f << std::endl;
-  }
-  f.close();
+  // Build world state
+  spdlog::debug("Initializing chunk {}...", rank);
+  ChunkBounds chunkBounds =
+      calcualteChunkBounds(edgeLength, edgeLength, processes, rank);
+  WorldState state(std::move(world), chunkBounds);
+  spdlog::debug("Chunk {} with borders [{}, {}) and [{}, {}) initialized.",
+                rank, chunkBounds.xMin, chunkBounds.xMax, chunkBounds.yMin,
+                chunkBounds.yMax);
 
   // ChunkBounds chunkBounds =
   //     calcualteChunkBounds(edgeLength, edgeLength, processes, rank);

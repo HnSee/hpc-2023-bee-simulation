@@ -14,10 +14,11 @@
 
 class WorldState {
 public:
-  WorldState(WorldMap *map, ChunkBounds bounds) : map(map), bounds(bounds) {}
+  WorldState(std::unique_ptr<WorldMap> map, ChunkBounds bounds)
+      : map(std::move(map)), bounds(bounds) {}
 
   PointTree<double, Agent> agents;
-  WorldMap *map;
+  std::unique_ptr<WorldMap> map;
   Configuration config;
   int day = 0;
 
