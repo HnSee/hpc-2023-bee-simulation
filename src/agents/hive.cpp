@@ -74,9 +74,3 @@ void Hive::update() {
 }
 
 AgentType Hive::gettype() const { return AgentType::Hive; }
-
-void Hive::nuke() {
-  // removeagent = true;
-  // delete hstore;
-  // delete this;
-}

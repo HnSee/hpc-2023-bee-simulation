@@ -21,9 +21,6 @@ void Agent::specialinteraction() {
   return;
 }
 
-// frees the allocated memory
-void Agent::nuke() { std::cout << "This is an empty declaration! \n"; }
-
 std::ostream &operator<<(std::ostream &output, const Agent &a) {
   output << "[" << a.gettype() << "]";
   return output;
