@@ -1,7 +1,9 @@
 #include "hive.hpp"
 #include "bee.hpp"
+#include "../utils/point_tree.hpp"
 #include <iomanip>
 #include <random>
+
 
 void Hive::init(int totalbees, HiveBeeAccess *hstore) {
   tickoftheday = 0;
@@ -12,10 +14,17 @@ void Hive::init(int totalbees, HiveBeeAccess *hstore) {
   this->hstore->foodstore = 0;
 }
 
-void Hive::move() { return; }
+// collecting the bees
+void Hive::move() {  
+  
+  RangeResult<double, Agent> *result = this->state.agents.range( pos, 0.1 ); 
+  std::cout << result->size() << "\n";
+  return;
+}
 
 int Hive::getsize() { return ds->size(); }
 
+// spawing new bees
 void Hive::update() {
   tickoftheday += 1;
   double x = (double)tickoftheday / this->state.config.daylength;
@@ -32,8 +41,6 @@ void Hive::update() {
 
     if ((totalbees - hstore->foodsources.size() > 0 && t < scoutpercentage) ||
         hstore->foodsources.size() == 0) {
-      // std::cout << "Scout: " << scoutpercentage << "  " << t << "\n";
-      // scogut += 1;
 
       std::random_device rd;
       std::mt19937 e2(rd());
@@ -53,9 +60,6 @@ void Hive::update() {
       PointValue<double, Agent> newPointValue(newBeePosition, newBee);
       this->state.agents.add(newPointValue);
     } else {
-      // std::cout << "Worker: " << scoutpercentage << "  " << t << "\n";
-      // worker += 1;int scout = 0;
-      int worker = 0;
 
       Coordinates<double> newBeePosition{pos.x, pos.y};
       std::shared_ptr<Bee> newBee =

@@ -37,7 +37,7 @@ Coordinates<double> getmovementvector(Coordinates<double> pos,
 
   std::random_device rd;
   std::mt19937 e2(rd());
-  std::uniform_real_distribution<double> unif(0, 0.01);
+  std::uniform_real_distribution<double> unif(0, 0.001);
 
   // Getting a random double value
   double randomX = unif(e2);

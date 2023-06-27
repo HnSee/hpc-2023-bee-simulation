@@ -295,8 +295,8 @@ private:
 
     double distance = currentNode->getDistanceTo(point);
 
-    if (this->currentNearestPoint == nullptr ||
-        distance < this->currentSmallestDistance) {
+    if ( this->currentNearestPoint == nullptr ||
+        distance < this->currentSmallestDistance ) {
       this->currentSmallestDistance = distance;
       this->currentNearestPoint = &currentNode->point;
       this->currentNearestValue = currentNode->value;
