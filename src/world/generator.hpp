@@ -2,34 +2,38 @@
 #define BEESIMULATION_WORLD_GENERATOR_H
 
 #include "../extern/jc_voronoi.h"
+#include "../utils/ctd_array.hpp"
+
 #include <array>
 #include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
-enum Biome { Field, Meadow, City, Waters, Forest };
+enum class Biome : int { Field, Meadow, City, Waters, Forest };
+std::ostream &operator<<(std::ostream &os, Biome biome);
 
-typedef Biome WorldCell;
+using WorldCell = Biome;
 
 // Unit is 1x1 Cell is 1m x 1m
-typedef std::vector<std::vector<WorldCell>> WorldMap;
+using WorldMap = CTDArray<WorldCell>;
 
-typedef unsigned char BiomeRegionIdentifier;
-typedef std::array<double, 3> Color;
+using BiomeRegionIdentifier = unsigned char;
+using Color = std::array<double, 3>;
 
 class WorldGenerator {
 
 public:
   // TODO: move settings in this constructor instead of hardcoded values below
   // WorldGenerator();
-  WorldMap generateWorld();
+  std::unique_ptr<WorldMap> generateWorld();
 
 private:
   // Settings
   unsigned int seed = 123123123;
-  unsigned int size = 1024;
+  unsigned int size = 1000;
   unsigned int biomes = 512;
   unsigned short relaxations = 4;
   // double perlinPersistence = 0.5;
@@ -52,7 +56,7 @@ private:
   // Per generation variables
   jcv_diagram currentVoronoiRepresentation;
   std::vector<std::vector<unsigned char>> currentWorldBiomeRegions;
-  WorldMap currentWorldMap;
+  std::unique_ptr<WorldMap> currentWorldMap;
   unsigned short currentZoom;
 
   void generateVoronoiRepresentation();
@@ -64,8 +68,5 @@ private:
   void generateBiomeRegionImage(std::string outputPath);
   void generateWorldImageWithBiomeColor(std::string outputPath);
 };
-
-std::pair<WorldCell *, std::size_t> serializeWorldMap(WorldMap &map);
-WorldMap deserializeWorldMap(std::pair<WorldCell *, std::size_t> &map, std::size_t rowSize);
 
 #endif

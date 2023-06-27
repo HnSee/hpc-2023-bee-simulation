@@ -15,11 +15,10 @@ using testing::Gt;
 
 TEST(Agents, CreatePointTree) {
   WorldGenerator generator;
-  WorldMap map = generator.generateWorld();
-  WorldState state(&map, ChunkBounds{0, 1000, 0, 1000});
+  std::unique_ptr<WorldMap> map = generator.generateWorld();
+  WorldState state(std::move(map), ChunkBounds{0, 1000, 0, 1000});
 
-  std::shared_ptr<Hive> h =
-      std::make_shared<Hive>(state, Coordinates<double>{0, 0});
+  auto h = std::make_shared<Hive>(state, Coordinates<double>{0, 0});
 
   h->init(40000, new HiveBeeAccess);
 

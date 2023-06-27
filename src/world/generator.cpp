@@ -15,6 +15,23 @@
 #include <sstream>
 #include <unordered_map>
 
+std::ostream &operator<<(std::ostream &os, Biome biome) {
+  switch (biome) {
+  case Biome::Field:
+    return os << "FLD";
+  case Biome::Meadow:
+    return os << "MDW";
+  case Biome::City:
+    return os << "CTY";
+  case Biome::Forest:
+    return os << "FST";
+  case Biome::Waters:
+    return os << "WTR";
+  }
+
+  return os << "UNKNOWN";
+}
+
 float clip(float n, float lower, float upper) {
   return std::max(lower, std::min(n, upper));
 }
@@ -40,7 +57,7 @@ static void relax_points(const jcv_diagram *diagram, jcv_point *points) {
   }
 }
 
-WorldMap WorldGenerator::generateWorld() {
+std::unique_ptr<WorldMap> WorldGenerator::generateWorld() {
   this->currentZoom = this->initialZoom;
   srand(this->seed);
 
@@ -64,7 +81,7 @@ WorldMap WorldGenerator::generateWorld() {
   // this->generateWorldImageWithBiomeColor("stage_5.png");
   spdlog::debug("Biomes assigned.");
 
-  return this->currentWorldMap;
+  return std::move(this->currentWorldMap);
 }
 
 void WorldGenerator::generateVoronoiRepresentation() {
@@ -224,6 +241,7 @@ void WorldGenerator::blurEdges() {
   double resolution = 32;
   double scale = (double)this->size / resolution;
 
+#pragma omp parallel for
   for (std::size_t i = 0; i < displacementMap.size(); i++) {
     for (std::size_t j = 0; j < displacementMap[i].size(); j++) {
       displacementMap[i][j] = std::pair<int, int>(
@@ -239,6 +257,7 @@ void WorldGenerator::blurEdges() {
     }
   }
 
+#pragma omp parallel for
   for (std::size_t x = 0; x < displacementMap.size(); x++) {
     for (std::size_t y = 0; y < displacementMap[x].size(); y++) {
       newMap[x][y] =
@@ -256,7 +275,7 @@ void WorldGenerator::freeBiomeRegions() {
 }
 
 void WorldGenerator::assignBiomes() {
-  this->currentWorldMap.resize(this->size, std::vector<WorldCell>(this->size));
+  this->currentWorldMap = std::make_unique<WorldMap>(this->size, this->size);
   std::unordered_map<BiomeRegionIdentifier, Biome> biomeMap;
 
   std::size_t biomeCount = this->biomeProbabilities.size();
@@ -274,12 +293,17 @@ void WorldGenerator::assignBiomes() {
       biomeDistributionProbability.begin(), biomeDistributionProbability.end());
 
   // Collect biome representations
+#pragma omp parallel for
   for (std::size_t x = 0; x < this->size; x++) {
     for (std::size_t y = 0; y < this->size; y++) {
       BiomeRegionIdentifier cellValue = this->currentWorldBiomeRegions[x][y];
-      auto biome = biomeMap.insert(std::pair<BiomeRegionIdentifier, Biome>(
-          cellValue, Biome(biomeDistribution(gen) % biomeCount)));
-      this->currentWorldMap[x][y] = (WorldCell)biome.first->second;
+      std::pair<BiomeRegionIdentifier, Biome> biomeIdToBiome(
+          cellValue, Biome(biomeDistribution(gen) % biomeCount));
+#pragma omp critical
+      {
+        auto biome = biomeMap.insert(biomeIdToBiome);
+        (*this->currentWorldMap)[x][y] = (WorldCell)biome.first->second;
+      }
     }
   }
 }
@@ -313,12 +337,13 @@ void WorldGenerator::generateWorldImageWithBiomeColor(std::string outputPath) {
       Cairo::ImageSurface::create(Cairo::Format::FORMAT_RGB24, width, width);
   auto cr = Cairo::Context::create(surface);
 
-  auto rows = this->currentWorldMap.size();
-  auto cols = rows;
+  auto dimensions = this->currentWorldMap->dimensions();
+  auto rows = dimensions.first;
+  auto cols = dimensions.second;
 
   for (std::size_t row = 0; row < rows; row++) {
     for (std::size_t col = 0; col < cols; col++) {
-      Biome value = Biome(this->currentWorldMap[row][col]);
+      Biome value = Biome((*this->currentWorldMap)[row][col]);
       Color color = this->biomeColors[value];
       cr->set_source_rgb(color[0], color[1], color[2]);
       cr->rectangle(row, col, 1, 1);
@@ -327,28 +352,4 @@ void WorldGenerator::generateWorldImageWithBiomeColor(std::string outputPath) {
   }
 
   surface->write_to_png(outputPath);
-}
-
-std::pair<WorldCell *, std::size_t> serializeWorldMap(WorldMap &map) {
-  std::vector<WorldCell> flatMap = std::accumulate(
-      map.begin(), map.end(), std::vector<WorldCell>(),
-      [](std::vector<WorldCell> &c1, std::vector<WorldCell> &c2) {
-        c1.insert(c1.end(), c2.begin(), c2.end());
-        return c1;
-      });
-
-  return std::make_pair(flatMap.data(), flatMap.size());
-}
-
-WorldMap deserializeWorldMap(std::pair<WorldCell *, std::size_t> &map,
-                             std::size_t rowSize) {
-  WorldMap result;
-
-  spdlog::debug("size: {}, rowSize: {}", map.second, rowSize);
-  
-  for (WorldCell *i = map.first; i < map.first + map.second; i += rowSize) {
-    result.push_back(std::vector<WorldCell>(i, i + rowSize));
-  }
-
-  return result;
 }
