@@ -22,7 +22,7 @@ void Hive::move() {
   for(int k = 0; k < size; k++){
     if( result->at(k).value->gettype() == AgentType::Bee ){
       std::shared_ptr<Agent> a = result->at(k).value;
-      std::shared_ptr<Bee> b = (std::shared_ptr<Bee>) b;
+      std::shared_ptr<Bee> b = std::dynamic_pointer_cast<Bee>(a);
 
       if( b->searching == false ){
         this->totalfood += b->food;
