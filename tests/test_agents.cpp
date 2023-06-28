@@ -20,7 +20,7 @@ TEST(Agents, CreatePointTree) {
 
   auto h = std::make_shared<Hive>(state, Coordinates<double>{0, 0});
 
-  h->init(40000, new HiveBeeAccess);
+  h->init(40000);
 
   PointValue<double, Agent> hivePointValue(h->getPosition(), h);
   state.agents.add(hivePointValue);
