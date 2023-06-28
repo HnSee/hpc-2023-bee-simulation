@@ -3,20 +3,20 @@
 
 #include "../world/worldstate.hpp"
 #include "agent.hpp"
-#include "hive_bee_access.hpp"
 
 class Bee : public Agent {
 public:
   using Agent::Agent;
-
-  // hiveptr
-  HiveBeeAccess *hstore;
 
   // wether the bee is flying to the destination or the hive
   bool searching;
 
   // whether or not the bee is a scout
   bool worker;
+
+  int activebbes;
+
+  int foodstore;
 
   // food the bee is carrying
   int food;
@@ -28,7 +28,7 @@ public:
   Coordinates<double> destination;
 
   void init(Coordinates<double> hive, Coordinates<double> destination,
-            bool searching, bool worker, HiveBeeAccess *hstore);
+            bool searching, bool worker);
 
   void move();
 
