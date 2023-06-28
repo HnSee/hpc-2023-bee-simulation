@@ -3,14 +3,10 @@
 
 #include "../world/worldstate.hpp"
 #include "agent.hpp"
-#include "hive_bee_access.hpp"
 
-class Hive : public Agent {
+class Hive : public Agent{
 public:
   using Agent::Agent;
-
-  // place where the food is stored
-  HiveBeeAccess *hstore;
 
   // access to the datastructure to spawn bees into
   std::vector<Agent *> *ds;
@@ -24,13 +20,23 @@ public:
   // all the collected food
   int totalfood;
 
-  void init(int totalbees, HiveBeeAccess *hstore);
+  int activebees;
+
+  std::vector<Coordinates<double>> foodsources;
+
+  void init(int totalbees);
 
   Coordinates<double> move() override;
 
   int getsize();
 
   void update();
+
+  void add_fs(Coordinates<double> p);
+
+  void rem_fs(Coordinates<double> p);
+
+  Coordinates<double> rand_fs();
 
   AgentType gettype() const;
 };

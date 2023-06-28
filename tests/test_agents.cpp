@@ -6,7 +6,6 @@
 
 #include "../src/agents/bee.hpp"
 #include "../src/agents/hive.hpp"
-#include "../src/agents/hive_bee_access.hpp"
 #include "../src/utils/point_tree.hpp"
 #include "../src/world/chunking.hpp"
 

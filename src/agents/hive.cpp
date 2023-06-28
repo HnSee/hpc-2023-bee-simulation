@@ -4,18 +4,16 @@
 #include <iomanip>
 #include <random>
 
-void Hive::init(int totalbees, HiveBeeAccess *hstore) {
+void Hive::init(int totalbees) {
   tickoftheday = 0;
   this->totalbees = totalbees;
   this->ds = ds;
-  this->hstore = hstore;
-  this->hstore->activebees = 0;
-  this->hstore->foodstore = 0;
+  this->activebees = 0;
+  this->totalfood = 0;
 }
 
 // collecting the bees
 Coordinates<double> Hive::move() {  
-  
   RangeResult<double, Agent> *result = this->state.agents.range( pos, 0.1 );
   int size = result->size();
 
@@ -44,17 +42,17 @@ void Hive::update() {
   double x = (double)tickoftheday / this->state.config.daylength;
   int release = totalbees * (-3 * (x - 0.5) * (x - 0.5) + 1);
 
-  for (int k = 0; release > hstore->activebees; k++) {
+  for (int k = 0; release > this->activebees; k++) {
     // release bees
     //  calc the percentage the bee is a scout
     int beespersource = 100;
     double scoutpercentage =
-        ((double)totalbees - hstore->foodsources.size() * beespersource) /
+        ((double)totalbees - this->foodsources.size() * beespersource) /
         totalbees;
     double t = (double)(std::rand() % 10000) / 10000;
 
-    if ((totalbees - hstore->foodsources.size() > 0 && t < scoutpercentage) ||
-        hstore->foodsources.size() == 0) {
+    if ((totalbees - this->foodsources.size() > 0 && t < scoutpercentage) ||
+        this->foodsources.size() == 0) {
 
       std::random_device rd;
       std::mt19937 e2(rd());
@@ -69,7 +67,7 @@ void Hive::update() {
           std::make_shared<Bee>(this->state, newBeePosition);
 
       newBee->init(Coordinates<double>{pos.x, pos.y},
-                   Coordinates<double>{pos.x, pos.y}, true, false, hstore);
+                   Coordinates<double>{pos.x, pos.y}, true, false);
 
       PointValue<double, Agent> newPointValue(newBeePosition, newBee);
       this->state.agents.add(newPointValue);
@@ -79,16 +77,45 @@ void Hive::update() {
       std::shared_ptr<Bee> newBee =
           std::make_shared<Bee>(this->state, newBeePosition);
 
-      newBee->init(Coordinates<double>{pos.x, pos.y}, hstore->rand_fs(), true,
-                   true, hstore);
+      newBee->init(Coordinates<double>{pos.x, pos.y}, this->rand_fs(), true,
+                   true);
 
       PointValue<double, Agent> newPointValue(newBeePosition, newBee);
       this->state.agents.add(newPointValue);
     }
 
-    hstore->activebees += 1;
+    this->activebees += 1;
   }
   return;
+}
+
+void Hive::add_fs(Coordinates<double> p) {
+  for (int k = foodsources.size() - 1; k > 0; k--) {
+    if (foodsources.at(k).x == p.x && foodsources.at(k).y == p.y) {
+      return;
+    }
+  }
+  foodsources.push_back(p);
+}
+
+void Hive::rem_fs(Coordinates<double> p) {
+  for (int k = 0; k < foodsources.size(); k++) {
+    if (foodsources.at(k).x == p.x && foodsources.at(k).y == p.y) {
+      foodsources.at(k) = foodsources.at(foodsources.size() - 1);
+      foodsources.pop_back();
+      return;
+    }
+  }
+}
+
+Coordinates<double> Hive::rand_fs() {
+  if (foodsources.size() == 0) {
+    throw std::invalid_argument("must be at least one argument");
+  }
+
+  int r = std::rand() % foodsources.size();
+
+  return foodsources.at(r);
 }
 
 AgentType Hive::gettype() const { return AgentType::Hive; }

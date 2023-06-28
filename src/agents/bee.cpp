@@ -1,14 +1,12 @@
 #include "bee.hpp"
 #include "flower.hpp"
 
-void Bee::init(Coordinates<double> hive, Coordinates<double> destination,
-               bool searching, bool worker, HiveBeeAccess *hstore) {
+void Bee::init(Coordinates<double> hive, Coordinates<double> destination,bool searching, bool worker) {
   this->hivepos = hivepos;
   this->destination = destination;
   this->searching = searching;
   this->worker = worker;
-  this->hstore = hstore;
-  hstore->foodstore = 0;
+  this->food = 0;
 }
 
 Coordinates<double> Bee::move() {
@@ -21,10 +19,24 @@ Coordinates<double> Bee::move() {
       }
     } else {
       pos = getmovementvector(pos, hivepos);
+      
+      RangeResult<double, Agent> *result = this->state.agents.range( pos, 0.1 );
+      int size = result->size();
 
-      if (pos.x == hivepos.x && pos.y == hivepos.y) {
-        hstore->addfood(food);
+      for(int k = 0; k < size; k++){
+        if( result->at(k).value->gettype() == AgentType::Flower ){
+          std::shared_ptr<Agent> a = result->at(k).value;
+          std::shared_ptr<Flower> f = std::dynamic_pointer_cast<Flower>(a);
+
+          if( f->size > 100 ){
+            this->food += 10;
+            f->size -= 10;
+          }
+        }
       }
+
+      this->searching = false;
+
     }
   } else {
     if (searching) {
@@ -49,9 +61,9 @@ Coordinates<double> Bee::move() {
 
       this->searching = false;
 
-      // if scout reaches destination and doesnt find anything then the scout
+      // if scout reaces destination and doesnt find anything then the scout
       // either generates next location or returns
-      if (pos.x == destination.x && pos.y == destination.y) {
+      if (pos.x < destination.x + 0.1 && pos.x < destination.x - 0.1 && pos.y < destination.y + 0.1 && pos.y < destination.y - 0.1) {
         if (this->state.config.scoutindurance > std::rand() % 101) {
           destination.x += (std::rand() % 2000) - 1000;
           destination.y += (std::rand() % 2000) - 1000;
@@ -61,9 +73,6 @@ Coordinates<double> Bee::move() {
       }
     } else {
       pos = getmovementvector(pos, hivepos);
-      if (pos.x == hivepos.x && pos.y == hivepos.y) {
-        hstore->add_fs(destination);
-      }
     }
   }
 

@@ -3,7 +3,6 @@
 
 #include "../world/worldstate.hpp"
 #include "agent.hpp"
-#include "hive_bee_access.hpp"
 
 class Flower : public Agent {
 public:
