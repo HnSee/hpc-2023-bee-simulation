@@ -21,6 +21,9 @@ public:
   // all the bees belonging to the hive
   int totalbees;
 
+  // all the collected food
+  int totalfood;
+
   void init(int totalbees, HiveBeeAccess *hstore);
 
   void move();

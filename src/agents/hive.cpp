@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <random>
 
-
 void Hive::init(int totalbees, HiveBeeAccess *hstore) {
   tickoftheday = 0;
   this->totalbees = totalbees;
@@ -22,14 +21,17 @@ void Hive::move() {
 
   for(int k = 0; k < size; k++){
     if( result->at(k).value->gettype() == AgentType::Bee ){
-
       std::shared_ptr<Agent> a = result->at(k).value;
-      PointValue<double, Agent> p = PointValue<double, Agent>(  result->at(k).value->pos, a );
-      this->state.agents.removeByPointValue( p );
-    }
-    //
-  }
+      std::shared_ptr<Bee> b = (std::shared_ptr<Bee>) b;
 
+      if( b->searching == false ){
+        this->totalfood += b->food;
+        
+        PointValue<double, Agent> p = PointValue<double, Agent>(  result->at(k).value->pos, a );
+        this->state.agents.removeByPointValue( p );
+      }
+    }
+  }
 
   return;
 }
