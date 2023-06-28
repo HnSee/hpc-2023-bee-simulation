@@ -24,6 +24,11 @@ template <typename C, typename V> PointValue<C, V> pv(C x, C y, V v) {
   return PointValue<C, V>(x, y, v);
 }
 
+template <typename C, typename V>
+PointValue<C, V> pv(C x, C y, std::shared_ptr<V> v) {
+  return PointValue<C, V>(Coordinates<C>{x, y}, v);
+}
+
 TEST(PointTree, InitInt) {
   PointValue<int, int> testValues[] = {pv(0, 1, 2), pv(5, 3, 6), pv(2, 2, 1),
                                        pv(8, 7, 2), pv(9, 1, 0), pv(1, 1, 1)};
@@ -363,7 +368,7 @@ TEST(PointTree, RemoveLeaf) {
 
   EXPECT_EQ(tree.count(), 15);
 
-  PointValue<int, int> valueToRemove = pv(9, 14, 81);
+  PointValue<int, int> valueToRemove = pv(9, 14, testValues[3].value);
 
   std::ofstream out("remove_test.dot");
   out << tree.toDot();
@@ -385,7 +390,7 @@ TEST(PointTree, RemoveRoot) {
 
   EXPECT_EQ(tree.count(), 15);
 
-  PointValue<int, int> valueToRemove = pv(54, 22, 62);
+  PointValue<int, int> valueToRemove = pv(54, 22, testValues[2].value);
 
   std::ofstream out("remove_test_before.dot");
   out << tree.toDot();
@@ -412,7 +417,7 @@ TEST(PointTree, RemoveNodeWithoutRightChild) {
   EXPECT_EQ(tree.count(), 16);
 
   PointValue<int, int> valueToAdd = pv(31, 60, 1010);
-  PointValue<int, int> valueToRemove = pv(21, 78, 96);
+  PointValue<int, int> valueToRemove = pv(21, 78, testValues[7].value);
 
   tree.add(valueToAdd);
 
@@ -453,7 +458,7 @@ TEST(PointTree, RangeQuery1) {
 
   EXPECT_EQ(result->at(0).point.x, 24);
   EXPECT_EQ(result->at(0).point.y, 43);
-  EXPECT_EQ(result->at(0).value, 24);
+  EXPECT_EQ(*result->at(0).value, 24);
   EXPECT_EQ(result->at(0).distance, 5);
 }
 
