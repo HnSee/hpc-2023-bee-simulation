@@ -38,6 +38,11 @@ template <typename C> struct Coordinates {
     return calculateEuclideanDistance(*this, c);
   }
 
+  void clamp(C xMin, C xMax, C yMin, C yMax) {
+    this->x = std::max(xMin, std::min(this->x, xMax));
+    this->y = std::max(yMin, std::min(this->y, yMax));
+  }
+
   static double calculateEuclideanDistance(const Coordinates<C> &point1,
                                            const Coordinates<C> &point2) {
     return std::sqrt(std::pow(point2.x - point1.x, 2) +

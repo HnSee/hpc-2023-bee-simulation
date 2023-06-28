@@ -125,26 +125,51 @@ int main(int argc, char **argv) {
   SeedingConfiguration seedingConfig;
   seedingConfig.seed = static_cast<int>(time(nullptr));
   seedingConfig.flowerCount = 50;
-  seedingConfig.hiveCount = 1;
+
+  if (rank == 0) {
+    seedingConfig.hiveCount = 1;
+  }
 
   std::vector<AgentTemplate> initialAgents =
       generateInitialAgents(chunkBounds.xMin, chunkBounds.xMax,
                             chunkBounds.yMin, chunkBounds.yMax, seedingConfig);
   state.init(initialAgents);
   spdlog::debug("Initial agents seeded.");
-  spdlog::debug("Chunk {} with borders [{}, {}) and [{}, {}) initialized.",
-                rank, chunkBounds.xMin, chunkBounds.xMax, chunkBounds.yMin,
-                chunkBounds.yMax);
+  spdlog::debug(
+      "Chunk {} with borders [{}, {}) and [{}, {}) and {} agents initialized.",
+      rank, chunkBounds.xMin, chunkBounds.xMax, chunkBounds.yMin,
+      chunkBounds.yMax, state.agents.count());
 
   // Main loop
   MPI_Barrier(MPI_COMM_WORLD);
   for (unsigned int tick = 0; tick <= ticks; ++tick) {
-    if (rank == 0 && tick % 5000 == 0) {
+    if (rank == 0 && tick % 100 == 0) {
       spdlog::debug("Current tick: {}", tick);
     }
 
-    state.tick();
+    // Basic tick
+    // TODO: Memory leak?
+    std::vector<AgentToTransfer> agentsToTransfer = state.tick();
+
+    // Transfer necessary agents
     MPI_Barrier(MPI_COMM_WORLD);
+    for (int receiver = 0; receiver < processes; ++receiver) {
+      // std::vector<std::shared_ptr<Agent>> agentsToSend;
+      // for (auto it = std::make_move_iterator(agentsToTransfer.begin());
+      //      it != std::make_move_iterator(agentsToTransfer.end()); ++it) {
+      //   if (it->first == receiver) {
+      //     agentsToSend.push_back(it->second);
+      //   }
+      // }
+      // std::vector<Agent> agentsToReceive;
+
+      // if (rank == receiver) {
+      //   // ?????
+      //   // agentsToReceive.reserve()
+      // }
+
+      // MPI_Gatherv(&agentsToSend[0], sizeof(agentsToSend), MPI_BYTE, );
+    }
   }
 
   spdlog::info("Final agent count: {}", state.agents.count());

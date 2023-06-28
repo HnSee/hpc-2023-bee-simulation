@@ -12,6 +12,8 @@
 #include <utility>
 #include <vector>
 
+using AgentToTransfer = std::pair<int, std::shared_ptr<Agent>>;
+
 class WorldState {
 public:
   WorldState(std::unique_ptr<WorldMap> map, ChunkBounds bounds,
@@ -25,16 +27,13 @@ public:
   int day = 0;
 
   void init(const std::vector<AgentTemplate> &initialAgents);
-  void tick();
-  std::vector<PointValue<double, Agent>> getAgentsOutOfBounds();
+  std::vector<AgentToTransfer> tick();
 
 private:
   ChunkBounds bounds;
   ChunkBounds worldBounds;
   int globalChunkCount;
   int chunkIndex;
-
-  std::vector<std::pair<int, std::shared_ptr<Agent>>> agentsForChunkTransfer;
 
   int getTargetChunk(Coordinates<double> point) const;
 };

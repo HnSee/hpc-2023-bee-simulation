@@ -76,7 +76,7 @@ Coordinates<double> Bee::move() {
     }
   }
 
-  return this->pos;
+  return pos;
 }
 
 void Bee::update() { return; }

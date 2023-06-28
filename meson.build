@@ -102,7 +102,7 @@ test_worldstate = executable(
     'src/world/worldstate.cpp',
     'tests/test_worldstate.cpp',
   ],
-  dependencies: [gtest_dep, gtest_main_dep]
+  dependencies: [gtest_dep, gtest_main_dep, spdlog_dep]
 )
 
 test(
