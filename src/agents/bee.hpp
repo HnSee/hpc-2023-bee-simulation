@@ -30,11 +30,11 @@ public:
   void init(Coordinates<double> hive, Coordinates<double> destination,
             bool searching, bool worker, HiveBeeAccess *hstore);
 
-  void move();
+  Coordinates<double> move() override;
 
-  void update();
+  void update() override;
 
-  AgentType gettype() const;
+  AgentType gettype() const override;
 };
 
 #endif

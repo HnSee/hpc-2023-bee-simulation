@@ -10,29 +10,28 @@ class WorldState;
 class Agent {
 public:
   Agent(WorldState &state, Coordinates<double> pos) : state(state), pos(pos) {}
+  virtual ~Agent() = default;
 
   // initialization of the Agent, function has to initialize all necessary
   // variables
   virtual void init();
 
   // movement of the agent
-  void move();
+  virtual Coordinates<double> move();
 
   // update of agent after move
   virtual void update();
 
   virtual void specialinteraction();
 
-  // returns int of class (look enum declaration)
   virtual AgentType gettype() const = 0;
 
   Coordinates<double> getPosition();
 
   friend std::ostream &operator<<(std::ostream &output, const Agent &a);
 
+protected:
   WorldState &state;
-
-  // coordinates
   Coordinates<double> pos;
 };
 

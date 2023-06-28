@@ -3,7 +3,7 @@
 #include <cmath>
 
 std::pair<int, int> calculateClosestDivisors(int n) {
-  int a = std::round(std::sqrt(n));
+  int a = static_cast<int>(std::round(std::sqrt(n)));
 
   while (n % a > 0)
     a -= 1;
@@ -39,4 +39,18 @@ ChunkBounds calcualteChunkBounds(int areaMaxX, int areaMaxY, int chunkCount,
   }
 
   return result;
+}
+
+int calcualteChunkIndexOfPoint(int areaMaxX, int areaMaxY, int chunkCount,
+                               double x, double y) {
+  std::pair<int, int> chunks = calculateClosestDivisors(chunkCount);
+  int chunkXCount = chunks.first;
+  int chunkYCount = chunks.second;
+  int chunkWidth = areaMaxX / chunkXCount;
+  int chunkHeight = areaMaxY / chunkYCount;
+
+  int indexX = static_cast<int>(std::floor(x / chunkWidth));
+  int indexY = static_cast<int>(std::floor(y / chunkHeight));
+
+  return indexY * chunkXCount + indexX;
 }

@@ -14,21 +14,29 @@
 
 class WorldState {
 public:
-  WorldState(std::unique_ptr<WorldMap> map, ChunkBounds bounds)
-      : map(std::move(map)), bounds(bounds) {}
+  WorldState(std::unique_ptr<WorldMap> map, ChunkBounds bounds,
+             ChunkBounds worldBounds, int globalChunkCount, int chunkIndex)
+      : map(std::move(map)), bounds(bounds), worldBounds(worldBounds),
+        globalChunkCount(globalChunkCount), chunkIndex(chunkIndex) {}
 
   PointTree<double, Agent> agents;
   std::unique_ptr<WorldMap> map;
   Configuration config;
   int day = 0;
 
-  void init(std::vector<AgentTemplate> &agents);
+  void init(const std::vector<AgentTemplate> &initialAgents);
   void tick();
-  void move(std::shared_ptr<Agent> agent, Coordinates<double> to);
   std::vector<PointValue<double, Agent>> getAgentsOutOfBounds();
 
 private:
   ChunkBounds bounds;
+  ChunkBounds worldBounds;
+  int globalChunkCount;
+  int chunkIndex;
+
+  std::vector<std::pair<int, std::shared_ptr<Agent>>> agentsForChunkTransfer;
+
+  int getTargetChunk(Coordinates<double> point) const;
 };
 
 #endif

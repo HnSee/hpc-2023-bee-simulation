@@ -22,6 +22,10 @@ template <typename C> struct Coordinates {
     return l.x == r.x && l.y == r.y;
   }
 
+  friend bool operator!=(const Coordinates<C> &l, const Coordinates<C> &r) {
+    return l.x != r.x || l.y != r.y;
+  }
+
   bool smallerThan(const Coordinates<C> &c, Axis axis) const {
     return axis == Axis::X ? this->x < c.x : this->y < c.y;
   }
@@ -70,7 +74,8 @@ template <typename C, typename V> struct PartialRangeResult {
   double distance;
 
 public:
-  PartialRangeResult(Coordinates<C> point, std::shared_ptr<V> value, double distance)
+  PartialRangeResult(Coordinates<C> point, std::shared_ptr<V> value,
+                     double distance)
       : point(point), value(value), distance(distance) {}
 };
 
@@ -103,7 +108,8 @@ private:
     }
 
     friend bool operator==(const Node &n, const PointValue<C, V> &pv) {
-      return n.point.x == pv.point.x && n.point.y == pv.point.y && n.value == pv.value;
+      return n.point.x == pv.point.x && n.point.y == pv.point.y &&
+             n.value == pv.value;
     }
   };
 
@@ -294,8 +300,8 @@ private:
 
     double distance = currentNode->getDistanceTo(point);
 
-    if ( this->currentNearestPoint == nullptr ||
-        distance < this->currentSmallestDistance ) {
+    if (this->currentNearestPoint == nullptr ||
+        distance < this->currentSmallestDistance) {
       this->currentSmallestDistance = distance;
       this->currentNearestPoint = &currentNode->point;
       this->currentNearestValue = currentNode->value;

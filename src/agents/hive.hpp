@@ -26,7 +26,7 @@ public:
 
   void init(int totalbees, HiveBeeAccess *hstore);
 
-  void move();
+  Coordinates<double> move() override;
 
   int getsize();
 
