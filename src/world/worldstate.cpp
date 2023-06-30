@@ -37,6 +37,8 @@ std::vector<AgentToTransfer> WorldState::tick() {
       [this, &agentsForChunkTransfer](const PointValue<double, Agent> &pv) {
         // Move phase
         Coordinates<double> newPosition = pv.value->move();
+
+        // MOVE TO AGENTS
         newPosition.clamp(this->worldBounds.xMin, this->worldBounds.xMax,
                           this->worldBounds.yMin, this->worldBounds.yMax);
 
@@ -46,6 +48,7 @@ std::vector<AgentToTransfer> WorldState::tick() {
             AgentToTransfer agentToTransfer{targetChunk, pv.value};
             agentsForChunkTransfer.push_back(agentToTransfer);
           }
+          // TODO: INTERNAL MOVEMENT
         }
 
         // Update phase
