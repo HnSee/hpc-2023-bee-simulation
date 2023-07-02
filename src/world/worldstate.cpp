@@ -32,33 +32,48 @@ void WorldState::init(const std::vector<AgentTemplate> &initialAgents) {
 
 std::vector<AgentToTransfer> WorldState::tick() {
   std::vector<AgentToTransfer> agentsForChunkTransfer;
+  std::vector<AgentToMove> agentsToMove;
+  int count;
 
-  this->agents.traverse(
-      [this, &agentsForChunkTransfer](const PointValue<double, Agent> &pv) {
-        // Move phase
-        Coordinates<double> newPosition = pv.value->move();
+  this->agents.traverse([this, &agentsForChunkTransfer, &agentsToMove,
+                         &count](const PointValue<double, Agent> &pv) {
+    spdlog::debug("Traversed {}", count);
+    ++count;
 
-        // MOVE TO AGENTS
-        newPosition.clamp(this->worldBounds.xMin, this->worldBounds.xMax,
-                          this->worldBounds.yMin, this->worldBounds.yMax);
+    // Update phase
+    pv.value->update();
 
-        if (pv.point != newPosition) {
-          int targetChunk = this->getTargetChunk(newPosition);
-          if (targetChunk != this->chunkIndex) {
-            AgentToTransfer agentToTransfer{targetChunk, pv.value};
-            agentsForChunkTransfer.push_back(agentToTransfer);
-          }
-          // TODO: INTERNAL MOVEMENT
-        }
+    // Move phase
+    Coordinates<double> newPosition = pv.value->move();
 
-        // Update phase
-        pv.value->update();
-      });
+    // MOVE TO AGENTS
+    newPosition.clamp(this->worldBounds.xMin, this->worldBounds.xMax,
+                      this->worldBounds.yMin, this->worldBounds.yMax);
 
-  // Transfer phase
+    if (pv.point != newPosition) {
+      int targetChunk = this->getTargetChunk(newPosition);
+      if (targetChunk != this->chunkIndex) {
+        AgentToTransfer agentToTransfer{targetChunk, pv.value};
+        agentsForChunkTransfer.push_back(agentToTransfer);
+      }
+    } else {
+      AgentToMove agentToMove{pv.point, pv.value};
+      agentsToMove.push_back(agentToMove);
+    }
+  });
+
+  // Remove out of chunk agents phase
   for (auto &a : agentsForChunkTransfer) {
     PointValue<double, Agent> pvToRemove(a.second->getPosition(), a.second);
     this->agents.removeByPointValue(pvToRemove);
+  }
+
+  // Movement update phase
+  for (auto &a : agentsToMove) {
+    PointValue<double, Agent> pvToRemove(a.first, a.second);
+    this->agents.removeByPointValue(pvToRemove);
+    PointValue<double, Agent> pvToAdd(a.second->getPosition(), a.second);
+    this->agents.add(pvToAdd);
   }
 
   return agentsForChunkTransfer;

@@ -7,6 +7,7 @@
 #include <spdlog/spdlog.h>
 #include <sstream>
 
+#include "agents/bee.hpp"
 #include "world/chunking.hpp"
 #include "world/generator.hpp"
 #include "world/seeding.hpp"
@@ -124,7 +125,7 @@ int main(int argc, char **argv) {
   spdlog::debug("Seeding initial agents...");
   SeedingConfiguration seedingConfig;
   seedingConfig.seed = static_cast<int>(time(nullptr));
-  seedingConfig.flowerCount = 50;
+  seedingConfig.flowerCount = 5;
 
   if (rank == 0) {
     seedingConfig.hiveCount = 1;
@@ -154,19 +155,43 @@ int main(int argc, char **argv) {
     // Transfer necessary agents
     MPI_Barrier(MPI_COMM_WORLD);
     for (int receiver = 0; receiver < processes; ++receiver) {
-      // std::vector<std::shared_ptr<Agent>> agentsToSend;
-      // for (auto it = std::make_move_iterator(agentsToTransfer.begin());
-      //      it != std::make_move_iterator(agentsToTransfer.end()); ++it) {
-      //   if (it->first == receiver) {
-      //     agentsToSend.push_back(it->second);
-      //   }
-      // }
-      // std::vector<Agent> agentsToReceive;
 
-      // if (rank == receiver) {
-      //   // ?????
-      //   // agentsToReceive.reserve()
-      // }
+      spdlog::debug("Receiver: {}", receiver);
+
+      // Receive bees
+      std::vector<std::shared_ptr<Bee>> beesToTransfer;
+      for (auto it = agentsToTransfer.begin(); it != agentsToTransfer.end();) {
+        if (it->first == receiver && it->second->gettype() == AgentType::Bee) {
+          beesToTransfer.emplace_back(
+              std::dynamic_pointer_cast<Bee>(it->second));
+          it = agentsToTransfer.erase(it);
+        } else {
+          ++it;
+        }
+      }
+
+      // TODO: RESERVE
+      std::vector<Bee> beesToReceive;
+
+      if (rank == receiver) {
+        std::vector<int> counts(processes);
+        for (int sender = 0; sender < processes; ++sender) {
+          int count;
+          if (sender != receiver) {
+            MPI_Recv(&count, 1, MPI_INT, sender, 0, MPI_COMM_WORLD,
+                     MPI_STATUS_IGNORE);
+          }
+          counts[sender] = count;
+        }
+
+        spdlog::info("Rank {} is about to receive:", rank);
+        for (int i = 0; i < counts.size(); ++i) {
+          spdlog::info("  {} from {}", counts[i], i);
+        }
+      } else {
+        int count = static_cast<int>(beesToTransfer.size());
+        MPI_Send(&count, 1, MPI_INT, receiver, 0, MPI_COMM_WORLD);
+      }
 
       // MPI_Gatherv(&agentsToSend[0], sizeof(agentsToSend), MPI_BYTE, );
     }
