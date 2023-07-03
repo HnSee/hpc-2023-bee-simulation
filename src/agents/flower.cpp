@@ -7,7 +7,7 @@ void Flower::init(double bloomlength, double maxproduction, int peak) {
   this->size = 0;
 }
 
-void Flower::move() { return; }
+Coordinates<double> Flower::move() { return this->pos; }
 
 void Flower::update() {
   int storesize = size;

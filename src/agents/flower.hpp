@@ -23,7 +23,7 @@ public:
 
   void init(double bloomlength, double maxproduction, int peak);
 
-  void move();
+  Coordinates<double> move() override;
 
   void update();
 

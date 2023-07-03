@@ -20,7 +20,8 @@ struct AgentTemplate {
       : position(Coordinates<double>{x, y}), agentType(agentType) {}
 };
 
-std::vector<AgentTemplate> generateInitialAgents(int xMax, int yMax,
+std::vector<AgentTemplate> generateInitialAgents(int xMin, int xMax, int yMin,
+                                                 int yMax,
                                                  SeedingConfiguration &config);
 
 std::vector<std::vector<AgentTemplate>>

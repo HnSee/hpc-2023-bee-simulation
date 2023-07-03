@@ -3,14 +3,15 @@
 #include "chunking.hpp"
 #include "seeding.hpp"
 
-std::vector<AgentTemplate> generateInitialAgents(int xMax, int yMax,
+std::vector<AgentTemplate> generateInitialAgents(int xMin, int xMax, int yMin,
+                                                 int yMax,
                                                  SeedingConfiguration &config) {
   std::vector<AgentTemplate> result;
 
   std::random_device dev;
   std::mt19937 rng(dev());
-  std::uniform_real_distribution<double> unfX(0, xMax);
-  std::uniform_real_distribution<double> unfY(0, yMax);
+  std::uniform_real_distribution<double> unfX(xMin, xMax);
+  std::uniform_real_distribution<double> unfY(yMin, yMax);
 
   for (int i = 0; i < config.hiveCount; ++i) {
     double randomX = unfX(rng);
@@ -40,7 +41,6 @@ partitionInitialAgentsIntoChunks(std::vector<AgentTemplate> &initialAgents,
   }
 
   for (std::size_t i = 0; i < initialAgents.size(); ++i) {
-    int chunkIndex;
     for (std::size_t j = 0; j < chunkBounds.size(); ++j) {
       if (initialAgents[i].position.x >= chunkBounds[j].xMin &&
           initialAgents[i].position.x < chunkBounds[j].xMax &&

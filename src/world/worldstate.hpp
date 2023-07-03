@@ -12,23 +12,30 @@
 #include <utility>
 #include <vector>
 
+using AgentToTransfer = std::pair<int, std::shared_ptr<Agent>>;
+
 class WorldState {
 public:
-  WorldState(std::unique_ptr<WorldMap> map, ChunkBounds bounds)
-      : map(std::move(map)), bounds(bounds) {}
+  WorldState(std::unique_ptr<WorldMap> map, ChunkBounds bounds,
+             ChunkBounds worldBounds, int globalChunkCount, int chunkIndex)
+      : map(std::move(map)), bounds(bounds), worldBounds(worldBounds),
+        globalChunkCount(globalChunkCount), chunkIndex(chunkIndex) {}
 
   PointTree<double, Agent> agents;
   std::unique_ptr<WorldMap> map;
   Configuration config;
   int day = 0;
 
-  void init(std::vector<AgentTemplate> &agents);
-  void tick();
-  void move(std::shared_ptr<Agent> agent, Coordinates<double> to);
-  std::vector<PointValue<double, Agent>> getAgentsOutOfBounds();
+  void init(const std::vector<AgentTemplate> &initialAgents);
+  std::vector<AgentToTransfer> tick();
 
 private:
   ChunkBounds bounds;
+  ChunkBounds worldBounds;
+  int globalChunkCount;
+  int chunkIndex;
+
+  int getTargetChunk(Coordinates<double> point) const;
 };
 
 #endif

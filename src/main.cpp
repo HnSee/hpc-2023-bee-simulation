@@ -51,6 +51,9 @@ int main(int argc, char **argv) {
   unsigned int edgeLength = result["e"].as<unsigned int>();
   unsigned int biomes = result["b"].as<unsigned int>();
   unsigned int relaxations = result["r"].as<unsigned int>();
+  unsigned int ticks = 50000;
+
+  ChunkBounds worldBounds{0, edgeLength, 0, edgeLength};
 
   // Initialize MPI
   int mpiErr = MPI_Init(&argc, &argv);
@@ -72,6 +75,7 @@ int main(int argc, char **argv) {
 
   // Build world map
   std::unique_ptr<WorldMap> world;
+
   std::size_t worldCellCount;
   if (rank == 0) {
     spdlog::debug("Starting world generator...");
@@ -114,44 +118,61 @@ int main(int argc, char **argv) {
   spdlog::debug("Initializing chunk {}...", rank);
   ChunkBounds chunkBounds =
       calcualteChunkBounds(edgeLength, edgeLength, processes, rank);
-  WorldState state(std::move(world), chunkBounds);
-  spdlog::debug("Chunk {} with borders [{}, {}) and [{}, {}) initialized.",
-                rank, chunkBounds.xMin, chunkBounds.xMax, chunkBounds.yMin,
-                chunkBounds.yMax);
+  WorldState state(std::move(world), chunkBounds, worldBounds, processes, rank);
 
-  // ChunkBounds chunkBounds =
-  //     calcualteChunkBounds(edgeLength, edgeLength, processes, rank);
-  // WorldState *state;
-  // if (rank == 0) {
-  //   spdlog::debug("Seeding initial agents...");
+  // TODO: Seed once and distribute to processes
+  spdlog::debug("Seeding initial agents...");
+  SeedingConfiguration seedingConfig;
+  seedingConfig.seed = static_cast<int>(time(nullptr));
+  seedingConfig.flowerCount = 50;
 
-  //   SeedingConfiguration seedingConfig;
-  //   seedingConfig.seed = time(NULL);
-  //   seedingConfig.flowerCount = 500;
-  //   seedingConfig.hiveCount = 4;
+  if (rank == 0) {
+    seedingConfig.hiveCount = 1;
+  }
 
-  //   std::vector<AgentTemplate> initialAgents =
-  //       generateInitialAgents(1000, 1000, seedingConfig);
-  //   std::vector<std::vector<AgentTemplate>> initialAgentsPerChunk =
-  //       partitionInitialAgentsIntoChunks(initialAgents, edgeLength,
-  //       edgeLength,
-  //                                        processes);
+  std::vector<AgentTemplate> initialAgents =
+      generateInitialAgents(chunkBounds.xMin, chunkBounds.xMax,
+                            chunkBounds.yMin, chunkBounds.yMax, seedingConfig);
+  state.init(initialAgents);
+  spdlog::debug("Initial agents seeded.");
+  spdlog::debug(
+      "Chunk {} with borders [{}, {}) and [{}, {}) and {} agents initialized.",
+      rank, chunkBounds.xMin, chunkBounds.xMax, chunkBounds.yMin,
+      chunkBounds.yMax, state.agents.count());
 
-  //   spdlog::debug("Initial agents seeded.");
+  // Main loop
+  MPI_Barrier(MPI_COMM_WORLD);
+  for (unsigned int tick = 0; tick <= ticks; ++tick) {
+    if (rank == 0 && tick % 100 == 0) {
+      spdlog::debug("Current tick: {}", tick);
+    }
 
-  //   spdlog::debug("Initializing state for chunk {}", rank);
-  //   state = new WorldState(world, chunkBounds);
-  // }
+    // Basic tick
+    // TODO: Memory leak?
+    std::vector<AgentToTransfer> agentsToTransfer = state.tick();
 
-  // spdlog::info("Generating world image...");
-  // generator.generateWorldImage("output.svg");
-  // spdlog::info("World image generated.");
+    // Transfer necessary agents
+    MPI_Barrier(MPI_COMM_WORLD);
+    for (int receiver = 0; receiver < processes; ++receiver) {
+      // std::vector<std::shared_ptr<Agent>> agentsToSend;
+      // for (auto it = std::make_move_iterator(agentsToTransfer.begin());
+      //      it != std::make_move_iterator(agentsToTransfer.end()); ++it) {
+      //   if (it->first == receiver) {
+      //     agentsToSend.push_back(it->second);
+      //   }
+      // }
+      // std::vector<Agent> agentsToReceive;
 
-  // ChunkBounds chunkBoundsForThisProcess =
-  //     calcualteChunkBounds(world->size(), world[0].size(), processes, rank);
-  // WorldState state(
-  //     world, chunkBoundsForThisProcess.xMin, chunkBoundsForThisProcess.xMax,
-  //     chunkBoundsForThisProcess.yMin, chunkBoundsForThisProcess.yMax);
+      // if (rank == receiver) {
+      //   // ?????
+      //   // agentsToReceive.reserve()
+      // }
+
+      // MPI_Gatherv(&agentsToSend[0], sizeof(agentsToSend), MPI_BYTE, );
+    }
+  }
+
+  spdlog::info("Final agent count: {}", state.agents.count());
 
   MPI_Finalize();
 

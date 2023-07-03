@@ -3,25 +3,69 @@
 #include "../agents/flower.hpp"
 #include "../agents/hive.hpp"
 
-void WorldState::init(std::vector<AgentTemplate> &agents) {
-  for (AgentTemplate &a : agents) {
+#include <spdlog/spdlog.h>
+
+void WorldState::init(const std::vector<AgentTemplate> &initialAgents) {
+  for (const AgentTemplate &a : initialAgents) {
     std::shared_ptr<Agent> newAgent;
 
     switch (a.agentType) {
     case AgentType::Hive:
       newAgent = std::make_shared<Hive>(*this, Coordinates<double>{0, 0});
+      std::dynamic_pointer_cast<Hive>(newAgent)->init(40000);
       break;
     case AgentType::Flower:
       newAgent = std::make_shared<Flower>(*this, Coordinates<double>{0, 0});
+      std::dynamic_pointer_cast<Flower>(newAgent)->init(10, 20, 30);
       break;
     case AgentType::Bee:
       newAgent = std::make_shared<Bee>(*this, Coordinates<double>{0, 0});
       break;
     }
+
+    PointValue<double, Agent> newAgentAtPoint(a.position, newAgent);
+    this->agents.add(newAgentAtPoint);
   }
+
+  this->agents.rebalance();
 }
 
-void WorldState::tick() {
+std::vector<AgentToTransfer> WorldState::tick() {
+  std::vector<AgentToTransfer> agentsForChunkTransfer;
+
   this->agents.traverse(
-      [](const PointValue<double, Agent> &pv) { pv.value->update(); });
+      [this, &agentsForChunkTransfer](const PointValue<double, Agent> &pv) {
+        // Move phase
+        Coordinates<double> newPosition = pv.value->move();
+
+        // MOVE TO AGENTS
+        newPosition.clamp(this->worldBounds.xMin, this->worldBounds.xMax,
+                          this->worldBounds.yMin, this->worldBounds.yMax);
+
+        if (pv.point != newPosition) {
+          int targetChunk = this->getTargetChunk(newPosition);
+          if (targetChunk != this->chunkIndex) {
+            AgentToTransfer agentToTransfer{targetChunk, pv.value};
+            agentsForChunkTransfer.push_back(agentToTransfer);
+          }
+          // TODO: INTERNAL MOVEMENT
+        }
+
+        // Update phase
+        pv.value->update();
+      });
+
+  // Transfer phase
+  for (auto &a : agentsForChunkTransfer) {
+    PointValue<double, Agent> pvToRemove(a.second->getPosition(), a.second);
+    this->agents.removeByPointValue(pvToRemove);
+  }
+
+  return agentsForChunkTransfer;
+}
+
+int WorldState::getTargetChunk(Coordinates<double> point) const {
+  return calcualteChunkIndexOfPoint(this->worldBounds.xMax,
+                                    this->worldBounds.yMax,
+                                    this->globalChunkCount, point.x, point.y);
 }

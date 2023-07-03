@@ -26,7 +26,7 @@ public:
 
   void init(int totalbees);
 
-  void move();
+  Coordinates<double> move() override;
 
   int getsize();
 

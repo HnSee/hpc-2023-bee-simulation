@@ -64,6 +64,15 @@ test_ctd_array = executable(
   dependencies: [gtest_dep, gmock_dep, gtest_main_dep]
 )
 
+test_chunking = executable(
+  'test_chunking',
+  sources: [
+    'src/world/chunking.cpp',
+    'tests/test_chunking.cpp'
+  ],
+  dependencies: [gtest_dep, gmock_dep, gtest_main_dep]
+)
+
 test_agents = executable(
   'test_agents',
   sources: [
@@ -93,7 +102,7 @@ test_worldstate = executable(
     'src/world/worldstate.cpp',
     'tests/test_worldstate.cpp',
   ],
-  dependencies: [gtest_dep, gtest_main_dep]
+  dependencies: [gtest_dep, gtest_main_dep, spdlog_dep]
 )
 
 test(
@@ -105,6 +114,12 @@ test(
 test(
   'ctd_array',
   test_ctd_array,
+  args: '--gtest_color=yes'
+)
+
+test(
+  'chunking',
+  test_chunking,
   args: '--gtest_color=yes'
 )
 

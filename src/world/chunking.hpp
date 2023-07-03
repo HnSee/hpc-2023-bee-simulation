@@ -17,4 +17,7 @@ std::pair<int, int> calculateClosestDivisors(int n);
 ChunkBounds calcualteChunkBounds(int areaMaxX, int areaMaxY, int chunkCount,
                                  int chunkIndex);
 
+int calcualteChunkIndexOfPoint(int areaMaxX, int areaMaxY,
+                                       int chunkCount, double x, double y);
+
 #endif

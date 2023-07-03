@@ -5,9 +5,9 @@ void Agent::init() {
   return;
 }
 
-void Agent::move() {
+Coordinates<double> Agent::move() {
   std::cout << "This is an empty declaration! \n";
-  return;
+  return this->pos;
 }
 
 // update of agent after move
@@ -46,6 +46,7 @@ Coordinates<double> getmovementvector(Coordinates<double> pos,
   if (pyt < 1) {
     return Coordinates<double>{pos.x + x + randomX, pos.y + y + randomY};
   } else {
-    return Coordinates<double>{pos.x + x / pyt + randomX, pos.y + y / pyt + randomY};
+    return Coordinates<double>{pos.x + x / pyt + randomX,
+                               pos.y + y / pyt + randomY};
   }
 }

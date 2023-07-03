@@ -9,7 +9,7 @@ void Bee::init(Coordinates<double> hive, Coordinates<double> destination,bool se
   this->food = 0;
 }
 
-void Bee::move() {
+Coordinates<double> Bee::move() {
   if (worker) {
     if (searching) {
       pos = getmovementvector(pos, destination);
@@ -44,15 +44,15 @@ void Bee::move() {
       // check if food is near
       // if food is near, store position in destination,
 
-      RangeResult<double, Agent> *result = this->state.agents.range( pos, 0.1 );
+      RangeResult<double, Agent> *result = this->state.agents.range(pos, 0.1);
       int size = result->size();
 
-      for(int k = 0; k < size; k++){
-        if( result->at(k).value->gettype() == AgentType::Flower ){
+      for (int k = 0; k < size; k++) {
+        if (result->at(k).value->gettype() == AgentType::Flower) {
           std::shared_ptr<Agent> a = result->at(k).value;
           std::shared_ptr<Flower> f = std::dynamic_pointer_cast<Flower>(a);
 
-          if( f->size > 100 ){
+          if (f->size > 100) {
             this->food += 10;
             f->size -= 10;
           }
@@ -75,6 +75,8 @@ void Bee::move() {
       pos = getmovementvector(pos, hivepos);
     }
   }
+
+  return pos;
 }
 
 void Bee::update() { return; }

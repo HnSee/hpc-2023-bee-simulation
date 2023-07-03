@@ -13,7 +13,7 @@ void Hive::init(int totalbees) {
 }
 
 // collecting the bees
-void Hive::move() {  
+Coordinates<double> Hive::move() {  
   RangeResult<double, Agent> *result = this->state.agents.range( pos, 0.1 );
   int size = result->size();
 
@@ -25,13 +25,13 @@ void Hive::move() {
       if( b->searching == false ){
         this->totalfood += b->food;
         
-        PointValue<double, Agent> p = PointValue<double, Agent>(  result->at(k).value->pos, a );
+        PointValue<double, Agent> p = PointValue<double, Agent>(  result->at(k).value->getPosition(), a );
         this->state.agents.removeByPointValue( p );
       }
     }
   }
 
-  return;
+  return this->pos;
 }
 
 int Hive::getsize() { return ds->size(); }
