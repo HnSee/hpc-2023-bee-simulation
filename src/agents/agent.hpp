@@ -9,7 +9,8 @@ class WorldState;
 
 class Agent {
 public:
-  Agent(WorldState &state, Coordinates<double> pos) : state(state), pos(pos) {}
+  Agent() = default;
+  Agent(WorldState *state, Coordinates<double> pos) : state(state), pos(pos) {}
   virtual ~Agent() = default;
 
   // initialization of the Agent, function has to initialize all necessary
@@ -27,11 +28,14 @@ public:
   virtual AgentType gettype() const = 0;
 
   Coordinates<double> getPosition();
+  void setPosition(Coordinates<double> newPosition);
+
+  void setState(WorldState *state);
 
   friend std::ostream &operator<<(std::ostream &output, const Agent &a);
 
 protected:
-  WorldState &state;
+  WorldState *state;
   Coordinates<double> pos;
 };
 

@@ -13,6 +13,7 @@
 #include <vector>
 
 using AgentToTransfer = std::pair<int, std::shared_ptr<Agent>>;
+using AgentToMove = std::pair<Coordinates<double>, std::shared_ptr<Agent>>;
 
 class WorldState {
 public:

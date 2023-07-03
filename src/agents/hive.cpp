@@ -1,6 +1,6 @@
 #include "hive.hpp"
-#include "bee.hpp"
 #include "../utils/point_tree.hpp"
+#include "bee.hpp"
 #include <iomanip>
 #include <random>
 
@@ -13,20 +13,21 @@ void Hive::init(int totalbees) {
 }
 
 // collecting the bees
-Coordinates<double> Hive::move() {  
-  RangeResult<double, Agent> *result = this->state.agents.range( pos, 0.1 );
+Coordinates<double> Hive::move() {
+  RangeResult<double, Agent> *result = this->state->agents.range(pos, 0.1);
   int size = result->size();
 
-  for(int k = 0; k < size; k++){
-    if( result->at(k).value->gettype() == AgentType::Bee ){
+  for (int k = 0; k < size; k++) {
+    if (result->at(k).value->gettype() == AgentType::Bee) {
       std::shared_ptr<Agent> a = result->at(k).value;
       std::shared_ptr<Bee> b = std::dynamic_pointer_cast<Bee>(a);
 
-      if( b->searching == false ){
+      if (b->searching == false) {
         this->totalfood += b->food;
-        
-        PointValue<double, Agent> p = PointValue<double, Agent>(  result->at(k).value->getPosition(), a );
-        this->state.agents.removeByPointValue( p );
+
+        PointValue<double, Agent> p =
+            PointValue<double, Agent>(result->at(k).value->getPosition(), a);
+        this->state->agents.removeByPointValue(p);
       }
     }
   }
@@ -39,7 +40,7 @@ int Hive::getsize() { return ds->size(); }
 // spawing new bees
 void Hive::update() {
   tickoftheday += 1;
-  double x = (double)tickoftheday / this->state.config.daylength;
+  double x = (double)tickoftheday / this->state->config.daylength;
   int release = totalbees * (-3 * (x - 0.5) * (x - 0.5) + 1);
 
   for (int k = 0; release > this->activebees; k++) {
@@ -70,7 +71,7 @@ void Hive::update() {
                    Coordinates<double>{pos.x, pos.y}, true, false);
 
       PointValue<double, Agent> newPointValue(newBeePosition, newBee);
-      this->state.agents.add(newPointValue);
+      this->state->agents.add(newPointValue);
     } else {
 
       Coordinates<double> newBeePosition{pos.x, pos.y};
@@ -81,7 +82,7 @@ void Hive::update() {
                    true);
 
       PointValue<double, Agent> newPointValue(newBeePosition, newBee);
-      this->state.agents.add(newPointValue);
+      this->state->agents.add(newPointValue);
     }
 
     this->activebees += 1;

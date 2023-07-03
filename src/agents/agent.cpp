@@ -28,6 +28,12 @@ std::ostream &operator<<(std::ostream &output, const Agent &a) {
 
 Coordinates<double> Agent::getPosition() { return this->pos; }
 
+void Agent::setPosition(Coordinates<double> newPosition) {
+  this->pos = newPosition;
+}
+
+void Agent::setState(WorldState *newState) { this->state = newState; }
+
 Coordinates<double> getmovementvector(Coordinates<double> pos,
                                       Coordinates<double> target) {
   double x, y, pyt;

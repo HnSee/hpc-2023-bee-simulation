@@ -11,15 +11,15 @@ Coordinates<double> Flower::move() { return this->pos; }
 
 void Flower::update() {
   int storesize = size;
-  size += maxproduction / (pow(bloomlength, abs(this->state.day - peak)));
+  size += maxproduction / (pow(bloomlength, abs(this->state->day - peak)));
 
   // std::cout << day << "\n";
   // std::cout << (int) (maxproduction / ( pow(bloomlength, abs(day-peak))) )
   // << "\n";
 
-  if ((int)(maxproduction / (pow(bloomlength, abs(this->state.day - peak)))) ==
+  if ((int)(maxproduction / (pow(bloomlength, abs(this->state->day - peak)))) ==
           0 &&
-      this->state.day > peak) {
+      this->state->day > peak) {
     return;
   }
 }

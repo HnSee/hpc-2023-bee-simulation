@@ -11,15 +11,15 @@ void WorldState::init(const std::vector<AgentTemplate> &initialAgents) {
 
     switch (a.agentType) {
     case AgentType::Hive:
-      newAgent = std::make_shared<Hive>(*this, Coordinates<double>{0, 0});
+      newAgent = std::make_shared<Hive>(this, Coordinates<double>{0, 0});
       std::dynamic_pointer_cast<Hive>(newAgent)->init(40000);
       break;
     case AgentType::Flower:
-      newAgent = std::make_shared<Flower>(*this, Coordinates<double>{0, 0});
+      newAgent = std::make_shared<Flower>(this, Coordinates<double>{0, 0});
       std::dynamic_pointer_cast<Flower>(newAgent)->init(10, 20, 30);
       break;
     case AgentType::Bee:
-      newAgent = std::make_shared<Bee>(*this, Coordinates<double>{0, 0});
+      newAgent = std::make_shared<Bee>(this, Coordinates<double>{0, 0});
       break;
     }
 
@@ -32,34 +32,48 @@ void WorldState::init(const std::vector<AgentTemplate> &initialAgents) {
 
 std::vector<AgentToTransfer> WorldState::tick() {
   std::vector<AgentToTransfer> agentsForChunkTransfer;
+  std::vector<AgentToMove> agentsToMove;
 
-  this->agents.traverse(
-      [this, &agentsForChunkTransfer](const PointValue<double, Agent> &pv) {
-        // Move phase
-        Coordinates<double> newPosition = pv.value->move();
+  this->agents.traverse([this, &agentsForChunkTransfer,
+                         &agentsToMove](const PointValue<double, Agent> &pv) {
+    // Update phase
+    pv.value->update();
 
-        // MOVE TO AGENTS
-        newPosition.clamp(this->worldBounds.xMin, this->worldBounds.xMax,
-                          this->worldBounds.yMin, this->worldBounds.yMax);
+    // Move phase
+    Coordinates<double> newPosition = pv.value->move();
 
-        if (pv.point != newPosition) {
-          int targetChunk = this->getTargetChunk(newPosition);
-          if (targetChunk != this->chunkIndex) {
-            AgentToTransfer agentToTransfer{targetChunk, pv.value};
-            agentsForChunkTransfer.push_back(agentToTransfer);
-          }
-          // TODO: INTERNAL MOVEMENT
-        }
+    // MOVE TO AGENTS
+    newPosition.clamp(this->worldBounds.xMin, this->worldBounds.xMax,
+                      this->worldBounds.yMin, this->worldBounds.yMax);
 
-        // Update phase
-        pv.value->update();
-      });
+    if (pv.point != newPosition) {
+      int targetChunk = this->getTargetChunk(newPosition);
+      if (targetChunk != this->chunkIndex) {
+        AgentToTransfer agentToTransfer{targetChunk, pv.value};
+        agentsForChunkTransfer.push_back(agentToTransfer);
+      }
+    } else {
+      AgentToMove agentToMove{pv.point, pv.value};
+      agentsToMove.push_back(agentToMove);
+    }
+  });
 
-  // Transfer phase
+  // Remove out of chunk agents phase
   for (auto &a : agentsForChunkTransfer) {
     PointValue<double, Agent> pvToRemove(a.second->getPosition(), a.second);
     this->agents.removeByPointValue(pvToRemove);
   }
+
+  // Movement update phase
+  for (auto &a : agentsToMove) {
+    PointValue<double, Agent> pvToRemove(a.first, a.second);
+    this->agents.removeByPointValue(pvToRemove);
+    PointValue<double, Agent> pvToAdd(a.second->getPosition(), a.second);
+    this->agents.add(pvToAdd);
+  }
+
+  // Rebalance phase
+  this->agents.rebalance();
 
   return agentsForChunkTransfer;
 }
