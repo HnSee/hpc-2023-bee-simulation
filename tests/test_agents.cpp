@@ -18,7 +18,7 @@ TEST(Agents, CreatePointTree) {
   ChunkBounds worldBounds{0, 1000, 0, 1000};
   WorldState state(std::move(map), worldBounds, worldBounds, 1, 0);
 
-  auto h = std::make_shared<Hive>(state, Coordinates<double>{0, 0});
+  auto h = std::make_shared<Hive>(&state, Coordinates<double>{0, 0});
 
   h->init(40000);
 

@@ -380,6 +380,45 @@ private:
     }
   }
 
+  template <typename S>
+  void calculateRangeSubtype(RangeResult<C, S> &result,
+                             std::unique_ptr<Node> &currentNode,
+                             const Coordinates<C> &point, double range,
+                             Axis currentAxis) {
+    if (!currentNode) {
+      return;
+    }
+
+    double distance = point.getDistanceTo(currentNode->point);
+    if (distance <= range) {
+      std::shared_ptr<S> subTypedValue =
+          std::dynamic_pointer_cast<S>(currentNode->value);
+      if (subTypedValue != nullptr) {
+        result.emplace_back(currentNode->point, subTypedValue, distance);
+      }
+    }
+
+    Axis nextAxis = currentAxis == Axis::X ? Axis::Y : Axis::X;
+
+    this->calculateRangeSubtype<S>(
+        result,
+        point.smallerThan(currentNode->point, currentAxis) ? currentNode->left
+                                                           : currentNode->right,
+        point, range, nextAxis);
+
+    double difference =
+        std::abs(point.difference(currentNode->point, currentAxis));
+
+    if (difference <= range) {
+      this->calculateRangeSubtype<S>(
+          result,
+          point.smallerThan(currentNode->point, currentAxis)
+              ? currentNode->right
+              : currentNode->left,
+          point, range, nextAxis);
+    }
+  }
+
   std::size_t traverseAndCount(std::unique_ptr<Node> &node) {
     if (!node) {
       return 0;
@@ -495,6 +534,17 @@ public:
 
     RangeResult<C, V> *result = new RangeResult<C, V>;
     this->calculateRange(*result, this->root, point, range, Axis::X);
+    return result;
+  }
+
+  template <typename S>
+  RangeResult<C, S> *rangeSubtype(const Coordinates<C> &point, double range) {
+    if (root == nullptr) {
+      return nullptr;
+    }
+
+    RangeResult<C, S> *result = new RangeResult<C, S>;
+    this->calculateRangeSubtype<S>(*result, this->root, point, range, Axis::X);
     return result;
   }
 

@@ -11,15 +11,15 @@ void WorldState::init(const std::vector<AgentTemplate> &initialAgents) {
 
     switch (a.agentType) {
     case AgentType::Hive:
-      newAgent = std::make_shared<Hive>(*this, Coordinates<double>{0, 0});
+      newAgent = std::make_shared<Hive>(this, Coordinates<double>{0, 0});
       std::dynamic_pointer_cast<Hive>(newAgent)->init(40000);
       break;
     case AgentType::Flower:
-      newAgent = std::make_shared<Flower>(*this, Coordinates<double>{0, 0});
+      newAgent = std::make_shared<Flower>(this, Coordinates<double>{0, 0});
       std::dynamic_pointer_cast<Flower>(newAgent)->init(10, 20, 30);
       break;
     case AgentType::Bee:
-      newAgent = std::make_shared<Bee>(*this, Coordinates<double>{0, 0});
+      newAgent = std::make_shared<Bee>(this, Coordinates<double>{0, 0});
       break;
     }
 
@@ -33,13 +33,9 @@ void WorldState::init(const std::vector<AgentTemplate> &initialAgents) {
 std::vector<AgentToTransfer> WorldState::tick() {
   std::vector<AgentToTransfer> agentsForChunkTransfer;
   std::vector<AgentToMove> agentsToMove;
-  int count;
 
-  this->agents.traverse([this, &agentsForChunkTransfer, &agentsToMove,
-                         &count](const PointValue<double, Agent> &pv) {
-    spdlog::debug("Traversed {}", count);
-    ++count;
-
+  this->agents.traverse([this, &agentsForChunkTransfer,
+                         &agentsToMove](const PointValue<double, Agent> &pv) {
     // Update phase
     pv.value->update();
 
@@ -75,6 +71,9 @@ std::vector<AgentToTransfer> WorldState::tick() {
     PointValue<double, Agent> pvToAdd(a.second->getPosition(), a.second);
     this->agents.add(pvToAdd);
   }
+
+  // Rebalance phase
+  this->agents.rebalance();
 
   return agentsForChunkTransfer;
 }

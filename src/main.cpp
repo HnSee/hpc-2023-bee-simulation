@@ -126,6 +126,7 @@ int main(int argc, char **argv) {
   SeedingConfiguration seedingConfig;
   seedingConfig.seed = static_cast<int>(time(nullptr));
   seedingConfig.flowerCount = 5;
+  seedingConfig.hiveCount = 0;
 
   if (rank == 0) {
     seedingConfig.hiveCount = 1;
@@ -156,8 +157,6 @@ int main(int argc, char **argv) {
     MPI_Barrier(MPI_COMM_WORLD);
     for (int receiver = 0; receiver < processes; ++receiver) {
 
-      spdlog::debug("Receiver: {}", receiver);
-
       // Receive bees
       std::vector<std::shared_ptr<Bee>> beesToTransfer;
       for (auto it = agentsToTransfer.begin(); it != agentsToTransfer.end();) {
@@ -170,27 +169,56 @@ int main(int argc, char **argv) {
         }
       }
 
-      // TODO: RESERVE
-      std::vector<Bee> beesToReceive;
+      Bee *beesToReceive;
 
       if (rank == receiver) {
         std::vector<int> counts(processes);
+        std::vector<int> sizes(processes);
         for (int sender = 0; sender < processes; ++sender) {
-          int count;
+          int count = 0;
           if (sender != receiver) {
             MPI_Recv(&count, 1, MPI_INT, sender, 0, MPI_COMM_WORLD,
                      MPI_STATUS_IGNORE);
           }
           counts[sender] = count;
+          sizes[sender] = sizeof(Bee) * count;
         }
 
-        spdlog::info("Rank {} is about to receive:", rank);
-        for (int i = 0; i < counts.size(); ++i) {
-          spdlog::info("  {} from {}", counts[i], i);
+        int sum = 0;
+        for (auto &c : counts) {
+          sum += c;
         }
+        if (sum > 0)
+          spdlog::info("Rank {} is about to receive {} bees", rank, sum);
+
+        beesToReceive = new Bee[sum];
+
+        MPI_Gatherv(nullptr, 0, MPI_BYTE, beesToReceive, &counts[0], &sizes[0],
+                    MPI_BYTE, receiver, MPI_COMM_WORLD);
+
+        if (sum > 0)
+          spdlog::debug("Current agent count for chunk {}: {}", rank,
+                        state.agents.count());
+        for (int i = 0; i < sum; ++i) {
+          Bee *newBeeCopy;
+          *newBeeCopy = beesToReceive[i];
+          std::shared_ptr<Bee> newBee(newBeeCopy);
+          newBee->setState(&state);
+          PointValue<double, Agent> pvToAdd(newBee->getPosition(), newBee);
+          state.agents.add(pvToAdd);
+        }
+        delete [] beesToReceive;
+
+        if (sum > 0)
+          spdlog::debug("New agent count for chunk {}: {}", rank,
+                        state.agents.count());
+
       } else {
         int count = static_cast<int>(beesToTransfer.size());
         MPI_Send(&count, 1, MPI_INT, receiver, 0, MPI_COMM_WORLD);
+
+        MPI_Gatherv(&beesToTransfer[0], count, MPI_BYTE, nullptr, nullptr,
+                    nullptr, MPI_BYTE, receiver, MPI_COMM_WORLD);
       }
 
       // MPI_Gatherv(&agentsToSend[0], sizeof(agentsToSend), MPI_BYTE, );
