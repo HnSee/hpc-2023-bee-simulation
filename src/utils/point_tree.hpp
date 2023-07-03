@@ -506,7 +506,7 @@ public:
   void traverse(const std::function<void(const PointValue<C, V> &)> &f) {
     this->traverseNodes(
         this->root, Axis::X,
-        [&f](const std::unique_ptr<Node> &node, const Axis axis) {
+        [&f](const std::unique_ptr<Node> &node) {
           PointValue<C, V> pv(node->point, node->value);
           f(pv);
         });
@@ -514,12 +514,12 @@ public:
 
   std::string toCsv() {
     std::stringstream result;
-    result << "x,y,axis" << std::endl;
+    result << "x,y,agent" << std::endl;
 
     this->traverseNodes(
         this->root, Axis::X,
         [&result](const std::unique_ptr<Node> &node, const Axis axis) {
-          result << node->point.x << "," << node->point.y << "," << axis
+          result << node->point.x << "," << node->point.y << "," << node->value->gettype()
                  << std::endl;
         });
 
