@@ -567,7 +567,7 @@ public:
   void traverse(const std::function<void(const PointValue<C, V> &)> &f) {
     this->traverseNodes(
         this->root, Axis::X,
-        [&f](const std::unique_ptr<Node> &node) {
+        [&f](const std::unique_ptr<Node> &node, const Axis axis) {
           PointValue<C, V> pv(node->point, node->value);
           f(pv);
         });
