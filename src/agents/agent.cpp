@@ -1,4 +1,5 @@
 #include "agent.hpp"
+#include <cmath>
 
 void Agent::init() {
   std::cout << "This is an empty declaration! \n";
@@ -36,10 +37,14 @@ void Agent::setState(WorldState *newState) { this->state = newState; }
 
 Coordinates<double> getmovementvector(Coordinates<double> pos,
                                       Coordinates<double> target) {
+
+  if( pos.x != pos.x){
+    std::cout << "get move vec!\n";
+  }
   double x, y, pyt;
   x = target.x - pos.x;
   y = target.y - pos.y;
-  pyt = sqrt(x * x + y * y);
+  pyt = sqrt( (x * x) + (y * y) );
 
   std::random_device rd;
   std::mt19937 e2(rd());
@@ -54,8 +59,9 @@ Coordinates<double> getmovementvector(Coordinates<double> pos,
 
   if (pyt < 1) {
     return Coordinates<double>{pos.x + x + randomX, pos.y + y + randomY};
+
   } else {
-    return Coordinates<double>{pos.x + x / pyt + randomX,
-                               pos.y + y / pyt + randomY};
+    return Coordinates<double>{(pos.x + x) / (pyt + 1) + randomX,
+                               (pos.y + y) / (pyt + 1) + randomY};
   }
 }

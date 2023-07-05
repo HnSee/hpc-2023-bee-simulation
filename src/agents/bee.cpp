@@ -2,7 +2,7 @@
 #include "flower.hpp"
 #include "src/agents/agent.hpp"
 
-void Bee::init(Coordinates<double> hive, Coordinates<double> destination,
+void Bee::init(Coordinates<double> hivepos, Coordinates<double> destination,
                bool searching, bool worker) {
   this->hivepos = hivepos;
   this->destination = destination;
@@ -16,8 +16,10 @@ Coordinates<double> Bee::move() {
   //std::cout << pos.x  << "  " << pos.y << "\n";
 
   if (worker) {
+
     if (searching) {
       pos = getmovementvector(pos, destination);
+      
       if (pos.x == destination.x && pos.y == destination.y) {
         food = 1;
         searching = false;
@@ -36,12 +38,13 @@ Coordinates<double> Bee::move() {
       }
 
       this->searching = false;
+
     }
   } else {
     if (searching) {
-      
+
       pos = getmovementvector(pos, destination);
-      
+
       // check if food is near
       // if food is near, store position in destination,
 
@@ -62,8 +65,7 @@ Coordinates<double> Bee::move() {
 
       // if scout reaces destination and doesnt find anything then the scout
       // either generates next location or returns
-      if (pos.x < destination.x + 1 && pos.x > destination.x - 1 &&
-          pos.y < destination.y + 1 && pos.y > destination.y - 1) {
+      if (pos.x < destination.x + 1 && pos.x > destination.x - 1 && pos.y < destination.y + 1 && pos.y > destination.y - 1) {
       //std::cout << "new destination!" << "\n"; 
         if (this->state->config.scoutindurance > std::rand() % 101) {
           //std::cout << "Destination: " << destination.x << "\n";
@@ -81,7 +83,6 @@ Coordinates<double> Bee::move() {
 
   //std::cout << pos.x  << "  " << pos.y << "\n";
   //std::cout << "\n";
-      
 
   return pos;
 }

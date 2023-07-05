@@ -162,7 +162,8 @@ int main(int argc, char **argv) {
     myfile.open ( "src/visualization/csv/" + std::to_string(filename));
     myfile << a;
     myfile.close();
-
+    
+    /*
     spdlog::debug("Vector len: {}", agentsToTransfer.size());
 
     // Transfer necessary agents
@@ -260,6 +261,7 @@ int main(int argc, char **argv) {
 
       // MPI_Gatherv(&agentsToSend[0], sizeof(agentsToSend), MPI_BYTE, );
     }
+    */
   }
 
   spdlog::info("Final agent count: {}", state.agents.count());

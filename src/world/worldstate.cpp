@@ -54,8 +54,8 @@ std::vector<AgentToTransfer> WorldState::tick() {
         agentsForChunkTransfer.push_back(agentToTransfer);
       }
       else {
-      AgentToMove agentToMove{pv.point, pv.value};
-      agentsToMove.push_back(agentToMove);
+        AgentToMove agentToMove{pv.point, pv.value};
+        agentsToMove.push_back(agentToMove);
       }
     }
   });
@@ -69,12 +69,17 @@ std::vector<AgentToTransfer> WorldState::tick() {
   }
 
   // Movement update phase
+
+  std::cout << "Before moving Agents: " << this->agents.count() << "\n";
+
   for (auto &a : agentsToMove) {
     PointValue<double, Agent> pvToRemove(a.first, a.second);
     this->agents.removeByPointValue(pvToRemove);
     PointValue<double, Agent> pvToAdd(a.second->getPosition(), a.second);
     this->agents.add(pvToAdd);
   }
+  std::cout << "After moving Agents: " << this->agents.count() << "\n";
+
 
   // Rebalance phase
   this->agents.rebalance();
