@@ -62,13 +62,14 @@ void Hive::update() {
       // Getting a random double value
       double randomX = unif(e2);
       double randomY = unif(e2);
-      Coordinates<double> newBeePosition{randomX, randomY};
+      Coordinates<double> newBeePosition{randomX+this->pos.x, this->pos.y+randomY};
+      std::cout << "Hiveposition: " << this->pos.x << "\n";
 
       std::shared_ptr<Bee> newBee =
           std::make_shared<Bee>(this->state, newBeePosition);
 
-      newBee->init(Coordinates<double>{pos.x, pos.y},
-                   Coordinates<double>{pos.x, pos.y}, true, false);
+      newBee->init(Coordinates<double>{newBeePosition.x, newBeePosition.y},
+                   Coordinates<double>{newBeePosition.x, newBeePosition.y}, true, false);
 
       PointValue<double, Agent> newPointValue(newBeePosition, newBee);
       this->state->agents.add(newPointValue);

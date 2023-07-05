@@ -49,6 +49,9 @@ Coordinates<double> getmovementvector(Coordinates<double> pos,
   double randomX = unif(e2);
   double randomY = unif(e2);
 
+  x *= 5;
+  y *= 5;
+
   if (pyt < 1) {
     return Coordinates<double>{pos.x + x + randomX, pos.y + y + randomY};
   } else {

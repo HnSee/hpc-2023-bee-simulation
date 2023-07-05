@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
 
   cxxopts::ParseResult result = options.parse(argc, argv);
 
+  spdlog::set_level(spdlog::level::debug);spdlog::set_level(spdlog::level::debug);
   if (result["v"].as<bool>()) {
     spdlog::set_level(spdlog::level::debug);
     spdlog::debug("Debug logging level activated");
@@ -143,8 +144,8 @@ int main(int argc, char **argv) {
       rank, chunkBounds.xMin, chunkBounds.xMax, chunkBounds.yMin,
       chunkBounds.yMax, state.agents.count());
 
-  // Main loop
   MPI_Barrier(MPI_COMM_WORLD);
+
   for (unsigned int tick = 0; tick <= ticks; ++tick) {
     if (rank == 0 && tick % 100 == 0) {
       spdlog::debug("Current tick: {}", tick);
@@ -153,10 +154,19 @@ int main(int argc, char **argv) {
     // Basic tick
     std::vector<AgentToTransfer> agentsToTransfer = state.tick();
 
-    // Transfer necessary agents
-    MPI_Barrier(MPI_COMM_WORLD);
-    for (int receiver = 0; receiver < processes; ++receiver) {
+    std::string a = state.agents.toCsv();
+    
+    std::ofstream myfile;
+    long filename = 1000000+tick;
+    spdlog::debug("src/visualization/csv/" + std::to_string(filename));
+    myfile.open ( "src/visualization/csv/" + std::to_string(filename));
+    myfile << a;
+    myfile.close();
 
+    spdlog::debug("Vector len: {}", agentsToTransfer.size());
+
+    // Transfer necessary agents
+    for (int receiver = 0; receiver < processes; ++receiver) {
       // Receive bees
       std::vector<std::shared_ptr<Bee>> beesToTransfer;
       for (auto it = agentsToTransfer.begin(); it != agentsToTransfer.end();) {
@@ -196,7 +206,7 @@ int main(int argc, char **argv) {
                          displs[i]);
           }
         }
-
+  
         beesToReceive = new Bee[sum];
 
         if (sum > 0)
@@ -237,6 +247,11 @@ int main(int argc, char **argv) {
           spdlog::info("First sending bee's position: ({}|{})",
                        beesToTransfer[0]->getPosition().x,
                        beesToTransfer[0]->getPosition().y);
+        }
+
+        std::vector<Bee_struct> transferdata;
+        for(int k = 0; k < beesToTransfer.size(); k++){
+          transferdata.push_back( beesToTransfer[k]->get_struct() );
         }
 
         MPI_Gatherv(&beesToTransfer[0], count, MPI_BYTE, nullptr, nullptr,

@@ -11,15 +11,16 @@ void WorldState::init(const std::vector<AgentTemplate> &initialAgents) {
 
     switch (a.agentType) {
     case AgentType::Hive:
-      newAgent = std::make_shared<Hive>(this, Coordinates<double>{0, 0});
+      newAgent = std::make_shared<Hive>(this, Coordinates<double>{a.position.x, a.position.y});
       std::dynamic_pointer_cast<Hive>(newAgent)->init(40000);
       break;
     case AgentType::Flower:
-      newAgent = std::make_shared<Flower>(this, Coordinates<double>{0, 0});
+      newAgent = std::make_shared<Flower>(this, Coordinates<double>{a.position.x, a.position.y});
       std::dynamic_pointer_cast<Flower>(newAgent)->init(10, 20, 30);
       break;
     case AgentType::Bee:
-      newAgent = std::make_shared<Bee>(this, Coordinates<double>{0, 0});
+      newAgent = std::make_shared<Bee>(this, Coordinates<double>{a.position.x, a.position.y});
+      std::cout << "This should never happen!!!";
       break;
     }
 
