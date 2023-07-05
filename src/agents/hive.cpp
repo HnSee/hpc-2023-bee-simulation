@@ -63,7 +63,7 @@ void Hive::update() {
       double randomX = unif(e2);
       double randomY = unif(e2);
       Coordinates<double> newBeePosition{randomX+this->pos.x, this->pos.y+randomY};
-      std::cout << "Hiveposition: " << this->pos.x << "\n";
+      //std::cout << "Hiveposition: " << this->pos.x << "\n";
 
       std::shared_ptr<Bee> newBee =
           std::make_shared<Bee>(this->state, newBeePosition);

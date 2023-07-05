@@ -53,11 +53,14 @@ std::vector<AgentToTransfer> WorldState::tick() {
         AgentToTransfer agentToTransfer{targetChunk, pv.value};
         agentsForChunkTransfer.push_back(agentToTransfer);
       }
-    } else {
+      else {
       AgentToMove agentToMove{pv.point, pv.value};
       agentsToMove.push_back(agentToMove);
+      }
     }
   });
+
+  std::cout << agentsToMove.size() << "\n";
 
   // Remove out of chunk agents phase
   for (auto &a : agentsForChunkTransfer) {

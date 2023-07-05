@@ -12,7 +12,8 @@ void Bee::init(Coordinates<double> hive, Coordinates<double> destination,
 }
 
 Coordinates<double> Bee::move() {
-
+  //std::cout << "\n";
+  //std::cout << pos.x  << "  " << pos.y << "\n";
 
   if (worker) {
     if (searching) {
@@ -39,14 +40,8 @@ Coordinates<double> Bee::move() {
   } else {
     if (searching) {
       
-      //std::cout << "\n";
-      //std::cout << pos.x  << "  " << pos.y << "\n";
-      //std::cout << worker << "\n";
-      
       pos = getmovementvector(pos, destination);
       
-      //std::cout << pos.x  << "  " << pos.y << "\n";
-      //std::cout << "\n";
       // check if food is near
       // if food is near, store position in destination,
 
@@ -83,6 +78,10 @@ Coordinates<double> Bee::move() {
       pos = getmovementvector(pos, hivepos);
     }
   }
+
+  //std::cout << pos.x  << "  " << pos.y << "\n";
+  //std::cout << "\n";
+      
 
   return pos;
 }
