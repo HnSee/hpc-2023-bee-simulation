@@ -59,14 +59,13 @@ std::vector<AgentToTransfer> WorldState::tick() {
       }
     }
   });
-
-  std::cout << agentsToMove.size() << "\n";
-
+  /*
   // Remove out of chunk agents phase
   for (auto &a : agentsForChunkTransfer) {
     PointValue<double, Agent> pvToRemove(a.second->getPosition(), a.second);
     this->agents.removeByPointValue(pvToRemove);
   }
+  */
 
   // Movement update phase
 
@@ -79,7 +78,6 @@ std::vector<AgentToTransfer> WorldState::tick() {
     this->agents.add(pvToAdd);
   }
   std::cout << "After moving Agents: " << this->agents.count() << "\n";
-
 
   // Rebalance phase
   this->agents.rebalance();

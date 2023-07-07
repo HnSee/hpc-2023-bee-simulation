@@ -249,7 +249,6 @@ private:
     Axis nextAxis = axis == Axis::X ? Axis::Y : Axis::X;
 
     if (*root == value) {
-
       if (root->right) {
         Node *minimum = this->findMinimum(root->right.get(), axis, Axis::X);
         root->point = minimum->point;
@@ -266,7 +265,8 @@ private:
         PointValue<C, V> minimumPointValue(minimum->point, minimum->value);
         root->right = this->removeByPointValueRecursive(
             root->left, minimumPointValue, nextAxis);
-      } else {
+      } 
+      else {
         root.reset();
         return nullptr;
       }
