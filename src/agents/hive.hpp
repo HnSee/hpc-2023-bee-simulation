@@ -26,7 +26,7 @@ public:
 
   void init(int totalbees);
 
-  Coordinates<double> move() override;
+  Coordinates<double> move(ChunkBounds worldBounds) override;
 
   int getsize();
 

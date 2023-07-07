@@ -2,6 +2,7 @@
 #define BEESIMULATION_AGENTS_AGENT_H
 
 #include "../utils/point_tree.hpp"
+#include "../world/chunking.hpp"
 #include "agent_type.hpp"
 #include <iostream>
 
@@ -18,7 +19,7 @@ public:
   virtual void init();
 
   // movement of the agent
-  virtual Coordinates<double> move();
+  virtual Coordinates<double> move(ChunkBounds worldBounds);
 
   // update of agent after move
   virtual void update();

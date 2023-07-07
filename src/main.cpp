@@ -36,7 +36,8 @@ int main(int argc, char **argv) {
 
   cxxopts::ParseResult result = options.parse(argc, argv);
 
-  spdlog::set_level(spdlog::level::debug);spdlog::set_level(spdlog::level::debug);
+  spdlog::set_level(spdlog::level::debug);
+  spdlog::set_level(spdlog::level::debug);
   if (result["v"].as<bool>()) {
     spdlog::set_level(spdlog::level::debug);
     spdlog::debug("Debug logging level activated");
@@ -154,26 +155,23 @@ int main(int argc, char **argv) {
     // Basic tick
     std::vector<AgentToTransfer> agentsToTransfer = state.tick();
 
-    std::string a = state.agents.toCsv();
-    
-    std::ofstream myfile;
-    long filename = 1000000+tick;
-    spdlog::debug("src/visualization/csv/" + std::to_string(filename));
-    myfile.open ( "src/visualization/csv/" + std::to_string(filename));
-    myfile << a;
-    myfile.close();
-    
-    /*
-    spdlog::debug("Vector len: {}", agentsToTransfer.size());
+    // std::string a = state.agents.toCsv();
+
+    // std::ofstream myfile;
+    // long filename = 1000000+tick;
+    // spdlog::debug("src/visualization/csv/" + std::to_string(filename));
+    // myfile.open ( "src/visualization/csv/" + std::to_string(filename));
+    // myfile << a;
+    // myfile.close();
 
     // Transfer necessary agents
     for (int receiver = 0; receiver < processes; ++receiver) {
       // Receive bees
-      std::vector<std::shared_ptr<Bee>> beesToTransfer;
+      std::vector<Bee> beesToTransfer;
       for (auto it = agentsToTransfer.begin(); it != agentsToTransfer.end();) {
-        if (it->first == receiver && it->second->gettype() == AgentType::Bee) {
-          beesToTransfer.emplace_back(
-              std::dynamic_pointer_cast<Bee>(it->second));
+        if (it->targetChunk == receiver &&
+            it->agent->gettype() == AgentType::Bee) {
+          beesToTransfer.push_back(*std::dynamic_pointer_cast<Bee>(it->agent));
           it = agentsToTransfer.erase(it);
         } else {
           ++it;
@@ -207,7 +205,7 @@ int main(int argc, char **argv) {
                          displs[i]);
           }
         }
-  
+
         beesToReceive = new Bee[sum];
 
         if (sum > 0)
@@ -246,14 +244,14 @@ int main(int argc, char **argv) {
 
         if (count > 0) {
           spdlog::info("First sending bee's position: ({}|{})",
-                       beesToTransfer[0]->getPosition().x,
-                       beesToTransfer[0]->getPosition().y);
+                       beesToTransfer[0].getPosition().x,
+                       beesToTransfer[0].getPosition().y);
         }
 
-        std::vector<Bee_struct> transferdata;
-        for(int k = 0; k < beesToTransfer.size(); k++){
-          transferdata.push_back( beesToTransfer[k]->get_struct() );
-        }
+        // std::vector<Bee_struct> transferdata;
+        // for (int k = 0; k < beesToTransfer.size(); k++) {
+        //   transferdata.push_back(beesToTransfer[k]->get_struct());
+        // }
 
         MPI_Gatherv(&beesToTransfer[0], count, MPI_BYTE, nullptr, nullptr,
                     nullptr, MPI_BYTE, receiver, MPI_COMM_WORLD);
@@ -261,7 +259,6 @@ int main(int argc, char **argv) {
 
       // MPI_Gatherv(&agentsToSend[0], sizeof(agentsToSend), MPI_BYTE, );
     }
-    */
   }
 
   spdlog::info("Final agent count: {}", state.agents.count());

@@ -23,7 +23,7 @@ public:
 
   void init(double bloomlength, double maxproduction, int peak);
 
-  Coordinates<double> move() override;
+  Coordinates<double> move(ChunkBounds worldBounds) override;
 
   void update();
 

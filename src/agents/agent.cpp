@@ -6,7 +6,7 @@ void Agent::init() {
   return;
 }
 
-Coordinates<double> Agent::move() {
+Coordinates<double> Agent::move(ChunkBounds worldBounds) {
   std::cout << "This is an empty declaration! \n";
   return this->pos;
 }
@@ -38,13 +38,13 @@ void Agent::setState(WorldState *newState) { this->state = newState; }
 Coordinates<double> getmovementvector(Coordinates<double> pos,
                                       Coordinates<double> target) {
 
-  if( pos.x != pos.x){
+  if (pos.x != pos.x) {
     std::cout << "get move vec!\n";
   }
   double x, y, pyt;
   x = target.x - pos.x;
   y = target.y - pos.y;
-  pyt = sqrt( (x * x) + (y * y) );
+  pyt = sqrt((x * x) + (y * y));
 
   std::random_device rd;
   std::mt19937 e2(rd());

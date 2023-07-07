@@ -1,54 +1,20 @@
-#ifndef BEESIMULATION_UTILS_2D_TREE_H
-#define BEESIMULATION_UTILS_2D_TREE_H
+#ifndef BEESIMULATION_UTILS_POINT_TREE_H
+#define BEESIMULATION_UTILS_POINT_TREE_H
 
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <functional>
+#include <iomanip>
 #include <memory>
 #include <random>
+#include <spdlog/spdlog.h>
 #include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
-enum Axis { X, Y };
-
-template <typename C> struct Coordinates {
-  C x;
-  C y;
-
-  friend bool operator==(const Coordinates<C> &l, const Coordinates<C> &r) {
-    return l.x == r.x && l.y == r.y;
-  }
-
-  friend bool operator!=(const Coordinates<C> &l, const Coordinates<C> &r) {
-    return l.x != r.x || l.y != r.y;
-  }
-
-  bool smallerThan(const Coordinates<C> &c, Axis axis) const {
-    return axis == Axis::X ? this->x < c.x : this->y < c.y;
-  }
-
-  double difference(const Coordinates<C> &c, Axis axis) const {
-    return axis == Axis::X ? this->x - c.x : this->y - c.y;
-  }
-
-  double getDistanceTo(const Coordinates<C> &c) const {
-    return calculateEuclideanDistance(*this, c);
-  }
-
-  void clamp(C xMin, C xMax, C yMin, C yMax) {
-    this->x = std::max(xMin, std::min(this->x, xMax));
-    this->y = std::max(yMin, std::min(this->y, yMax));
-  }
-
-  static double calculateEuclideanDistance(const Coordinates<C> &point1,
-                                           const Coordinates<C> &point2) {
-    return std::sqrt(std::pow(point2.x - point1.x, 2) +
-                     std::pow(point2.y - point1.y, 2));
-  }
-};
+#include "coordinates.hpp"
 
 template <typename C, typename V> struct PointValue {
   Coordinates<C> point;
@@ -239,6 +205,9 @@ private:
         axisToSearch);
   }
 
+  bool foundRoot = false;
+  bool foundMinimum = false;
+  bool minimumSearchMode = false;
   std::unique_ptr<Node>
   removeByPointValueRecursive(std::unique_ptr<Node> &root,
                               const PointValue<C, V> &value, Axis axis) {
@@ -249,18 +218,31 @@ private:
     Axis nextAxis = axis == Axis::X ? Axis::Y : Axis::X;
 
     if (*root == value) {
+<<<<<<< HEAD
+=======
+      if (minimumSearchMode) {
+        foundMinimum = true;
+      } else {
+        foundRoot = true;
+      }
+
+>>>>>>> origin/chunk-moving
       if (root->right) {
-        Node *minimum = this->findMinimum(root->right.get(), axis, Axis::X);
+        Node *minimum = this->findMinimum(root->right.get(), axis, nextAxis);
         root->point = minimum->point;
-        root->value.swap(minimum->value);
+        root->value = minimum->value;
+
+        minimumSearchMode = true;
 
         PointValue<C, V> minimumPointValue(minimum->point, minimum->value);
         root->right = this->removeByPointValueRecursive(
             root->right, minimumPointValue, nextAxis);
       } else if (root->left) {
-        Node *minimum = this->findMinimum(root->left.get(), axis, Axis::X);
+        Node *minimum = this->findMinimum(root->left.get(), axis, nextAxis);
         root->point = minimum->point;
-        root->value.swap(minimum->value);
+        root->value = minimum->value;
+
+        minimumSearchMode = true;
 
         PointValue<C, V> minimumPointValue(minimum->point, minimum->value);
         root->right = this->removeByPointValueRecursive(
@@ -502,8 +484,12 @@ public:
     }
   }
 
-  void removeByPointValue(const PointValue<C, V> &value) {
+  bool removeByPointValue(const PointValue<C, V> &value) {
+    this->minimumSearchMode = false;
+    this->foundMinimum = false;
+    this->foundRoot = false;
     this->root = this->removeByPointValueRecursive(this->root, value, Axis::X);
+    return this->foundRoot;
   }
 
   void rebalance() {
@@ -580,8 +566,8 @@ public:
     this->traverseNodes(
         this->root, Axis::X,
         [&result](const std::unique_ptr<Node> &node, const Axis axis) {
-          result << node->point.x << "," << node->point.y << "," << node->value->gettype()
-                 << std::endl;
+          result << node->point.x << "," << node->point.y << ","
+                 << node->value->gettype() << std::endl;
         });
 
     return result.str();
@@ -594,9 +580,9 @@ public:
     this->traverseParentChildNodePairs(
         this->root, [&result](const std::unique_ptr<Node> &parent,
                               const std::unique_ptr<Node> &child) {
-          result << child->point.x << "," << child->point.y << ","
-                 << *child->value << "," << parent->point.x << ","
-                 << parent->point.y << std::endl;
+          result << std::setprecision(15) << child->point.x << ","
+                 << child->point.y << "," << *child->value << ","
+                 << parent->point.x << "," << parent->point.y << std::endl;
         });
 
     return result.str();

@@ -12,7 +12,12 @@
 #include <utility>
 #include <vector>
 
-using AgentToTransfer = std::pair<int, std::shared_ptr<Agent>>;
+struct AgentToTransfer {
+  int targetChunk;
+  Coordinates<double> formerPosition;
+  std::shared_ptr<Agent> agent;
+};
+
 using AgentToMove = std::pair<Coordinates<double>, std::shared_ptr<Agent>>;
 
 class WorldState {
