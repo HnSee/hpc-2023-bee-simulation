@@ -52,7 +52,7 @@ public:
   void init(Coordinates<double> hive, Coordinates<double> destination,
             bool searching, bool worker);
 
-  Coordinates<double> move() override;
+  Coordinates<double> move(ChunkBounds worldBounds) override;
 
   void update() override;
 

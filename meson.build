@@ -53,7 +53,7 @@ test_point_tree = executable(
   sources: [
     'tests/test_point_tree.cpp'
   ],
-  dependencies: [gtest_dep, gmock_dep, gtest_main_dep]
+  dependencies: [gtest_dep, gmock_dep, gtest_main_dep, spdlog_dep]
 )
 
 test_ctd_array = executable(
@@ -141,7 +141,7 @@ bm_point_tree = executable(
   sources: [
     'benchmarks/point_tree.cpp'
   ],
-  dependencies: [benchmarking_dep]
+  dependencies: [benchmarking_dep, spdlog_dep]
 )
 
 benchmark(

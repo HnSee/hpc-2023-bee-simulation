@@ -11,15 +11,12 @@ void Bee::init(Coordinates<double> hivepos, Coordinates<double> destination,
   this->food = 0;
 }
 
-Coordinates<double> Bee::move() {
-  //std::cout << "\n";
-  //std::cout << pos.x  << "  " << pos.y << "\n";
+Coordinates<double> Bee::move(ChunkBounds worldBounds) {
 
   if (worker) {
-
     if (searching) {
       pos = getmovementvector(pos, destination);
-      
+
       if (pos.x == destination.x && pos.y == destination.y) {
         food = 1;
         searching = false;
@@ -38,7 +35,6 @@ Coordinates<double> Bee::move() {
       }
 
       this->searching = false;
-
     }
   } else {
     if (searching) {
@@ -65,13 +61,14 @@ Coordinates<double> Bee::move() {
 
       // if scout reaces destination and doesnt find anything then the scout
       // either generates next location or returns
-      if (pos.x < destination.x + 1 && pos.x > destination.x - 1 && pos.y < destination.y + 1 && pos.y > destination.y - 1) {
-      //std::cout << "new destination!" << "\n"; 
+      if (pos.x < destination.x + 1 && pos.x > destination.x - 1 &&
+          pos.y < destination.y + 1 && pos.y > destination.y - 1) {
+        // std::cout << "new destination!" << "\n";
         if (this->state->config.scoutindurance > std::rand() % 101) {
-          //std::cout << "Destination: " << destination.x << "\n";
+          // std::cout << "Destination: " << destination.x << "\n";
           destination.x += (std::rand() % 400) - 200;
           destination.y += (std::rand() % 400) - 200;
-          //std::cout << "Destination: " << destination.x << "\n";
+          // std::cout << "Destination: " << destination.x << "\n";
         } else {
           searching = false;
         }
@@ -81,8 +78,8 @@ Coordinates<double> Bee::move() {
     }
   }
 
-  //std::cout << pos.x  << "  " << pos.y << "\n";
-  //std::cout << "\n";
+  pos.clamp(worldBounds.xMin, worldBounds.xMax, worldBounds.yMin,
+            worldBounds.yMax);
 
   return pos;
 }
@@ -90,7 +87,9 @@ Coordinates<double> Bee::move() {
 void Bee::update() { return; }
 
 Bee_struct Bee::get_struct() {
-  Bee_struct bs = {this->searching, this->worker, this->activebbes, this->foodstore, this->food, this->hivepos, this->destination};
+  Bee_struct bs = {this->searching,  this->worker, this->activebbes,
+                   this->foodstore,  this->food,   this->hivepos,
+                   this->destination};
 }
 
 AgentType Bee::gettype() const { return AgentType::Bee; }
