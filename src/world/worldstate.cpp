@@ -38,7 +38,7 @@ void WorldState::init(const std::vector<AgentTemplate> &initialAgents) {
 std::vector<AgentToTransfer> WorldState::tick() {
   std::vector<std::shared_ptr<Agent>> agentsToUpdate;
   std::vector<AgentToTransfer> agentsForChunkTransfer;
-  std::vector<AgentToMove> agentsToMove;
+  std::vector<PointValue<double, Agent>> agentsOfCurrentChunk;
 
   auto start = std::chrono::high_resolution_clock::now();
 
@@ -63,68 +63,31 @@ std::vector<AgentToTransfer> WorldState::tick() {
   start = std::chrono::high_resolution_clock::now();
 
   // Move phase
-  this->agents.traverse([this, &agentsForChunkTransfer,
-                         &agentsToMove](const PointValue<double, Agent> &pv) {
+  this->agents.traverse([this, &agentsForChunkTransfer, &agentsOfCurrentChunk](
+                            const PointValue<double, Agent> &pv) {
     Coordinates<double> newPosition = pv.value->move(this->worldBounds);
 
-    if (pv.point != newPosition) {
-      int targetChunk = this->getTargetChunk(newPosition);
-      if (targetChunk != this->chunkIndex) {
-        AgentToTransfer agentToTransfer{targetChunk, pv.point, pv.value};
-        agentsForChunkTransfer.push_back(agentToTransfer);
-      } else {
-        AgentToMove agentToMove(pv.point, pv.value);
-        agentsToMove.push_back(agentToMove);
-      }
+    int targetChunk = this->getTargetChunk(newPosition);
+    if (targetChunk != this->chunkIndex) {
+      AgentToTransfer agentToTransfer{targetChunk, pv.point, pv.value};
+      agentsForChunkTransfer.push_back(agentToTransfer);
+    } else {
+      PointValue<double, Agent> agentToMove(newPosition, pv.value);
+      agentsOfCurrentChunk.push_back(agentToMove);
     }
   });
-<<<<<<< HEAD
-  /*
-=======
+
+  // Rebuild tree phase
+  this->agents = PointTree<double, Agent>(
+      std::make_move_iterator(agentsOfCurrentChunk.begin()),
+      std::make_move_iterator(agentsOfCurrentChunk.end()));
 
   stop = std::chrono::high_resolution_clock::now();
+
   spdlog::debug(
       "Move time: {}µs",
       std::chrono::duration_cast<std::chrono::microseconds>(stop - start)
           .count());
-
->>>>>>> origin/chunk-moving
-  // Remove out of chunk agents phase
-  for (auto &a : agentsForChunkTransfer) {
-    PointValue<double, Agent> pvToRemove(a.formerPosition, a.agent);
-    this->agents.removeByPointValue(pvToRemove);
-  }
-  */
-
-  spdlog::debug("[{}] Moving {} agents (currently {} agents total)",
-                this->chunkIndex, agentsToMove.size(), this->agents.count());
-
-  // Movement update phase
-  for (auto &a : agentsToMove) {
-    std::size_t prevCount = this->agents.count();
-    PointValue<double, Agent> pvToRemove(a.first, a.second);
-    this->agents.removeByPointValue(pvToRemove);
-
-    if (prevCount - 1 != this->agents.count()) {
-      spdlog::error("Previous count: {}, current count: {}", prevCount,
-                    this->agents.count());
-      std::ofstream f("out.csv");
-      f << this->agents.toDot();
-      f.close();
-    }
-
-    PointValue<double, Agent> pvToAdd(a.second->getPosition(), a.second);
-    this->agents.add(pvToAdd);
-  }
-
-<<<<<<< HEAD
-=======
-  spdlog::debug("[{}] {} agents moved (currently {} agents total)",
-                this->chunkIndex, agentsToMove.size(), this->agents.count());
-
->>>>>>> origin/chunk-moving
-  // Rebalance phase
-  this->agents.rebalance();
 
   return agentsForChunkTransfer;
 }
