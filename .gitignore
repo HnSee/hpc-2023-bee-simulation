@@ -40,3 +40,6 @@ compile_commands.json
 /*.jpg
 /*.svg
 /*.png
+
+src/visualization/csv/*
+src/visualization/videoframes/*
