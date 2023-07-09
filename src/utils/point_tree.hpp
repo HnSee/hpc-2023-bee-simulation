@@ -325,7 +325,7 @@ private:
     return std::max(leftHeight, rightHeight) + 1;
   }
 
-  void calculateRange(RangeResult<C, V> &result,
+  void calculateRange(std::unique_ptr<RangeResult<C, V>> &result,
                       std::unique_ptr<Node> &currentNode,
                       const Coordinates<C> &point, double range,
                       Axis currentAxis) {
@@ -335,7 +335,7 @@ private:
 
     double distance = point.getDistanceTo(currentNode->point);
     if (distance <= range) {
-      result.emplace_back(currentNode->point, currentNode->value, distance);
+      result->emplace_back(currentNode->point, currentNode->value, distance);
     }
 
     Axis nextAxis = currentAxis == Axis::X ? Axis::Y : Axis::X;
@@ -509,13 +509,14 @@ public:
         this->currentSmallestDistance, this->currentVisited};
   }
 
-  RangeResult<C, V> *range(const Coordinates<C> &point, double range) {
+  std::unique_ptr<RangeResult<C, V>> range(const Coordinates<C> &point,
+                                           double range) {
     if (root == nullptr) {
       return nullptr;
     }
 
-    RangeResult<C, V> *result = new RangeResult<C, V>;
-    this->calculateRange(*result, this->root, point, range, Axis::X);
+    auto result = std::make_unique<RangeResult<C, V>>();
+    this->calculateRange(result, this->root, point, range, Axis::X);
     return result;
   }
 

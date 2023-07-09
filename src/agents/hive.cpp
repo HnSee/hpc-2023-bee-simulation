@@ -14,7 +14,7 @@ void Hive::init(int totalbees) {
 
 // collecting the bees
 Coordinates<double> Hive::move(ChunkBounds worldBounds) {
-  RangeResult<double, Agent> *result = this->state->agents.range(pos, 0.1);
+  auto result = this->state->agents.range(pos, 0.1);
   int size = result->size();
 
   for (int k = 0; k < size; k++) {

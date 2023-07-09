@@ -44,7 +44,7 @@ Coordinates<double> Bee::move(ChunkBounds worldBounds) {
       // check if food is near
       // if food is near, store position in destination,
 
-      RangeResult<double, Agent> *result = this->state->agents.range(pos, 0.1);
+      auto result = this->state->agents.range(pos, 0.1);
       int size = result->size();
 
       for (int k = 0; k < size; k++) {

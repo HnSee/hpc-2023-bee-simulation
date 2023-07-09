@@ -448,7 +448,7 @@ TEST(PointTree, RangeQuery1) {
   Coordinates<int> center{20, 40};
   double range = 10;
 
-  RangeResult<int, int> *result = tree.range(center, range);
+  std::unique_ptr<RangeResult<int, int>> result = tree.range(center, range);
 
   std::ofstream out("rangeSearchTest1.csv");
   out << tree.toCsvWithParents();
@@ -476,7 +476,7 @@ TEST(PointTree, RangeQuery2) {
   Coordinates<int> center{15, 70};
   double range = 40;
 
-  RangeResult<int, int> *result = tree.range(center, range);
+  std::unique_ptr<RangeResult<int, int>> result = tree.range(center, range);
 
   std::ofstream out("rangeSearchTest2.csv");
   out << tree.toCsvWithParents();
