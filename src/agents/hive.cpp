@@ -21,9 +21,9 @@ int Hive::getsize() { return ds->size(); }
 
 // spawing new bees
 void Hive::update() {
-  if(this->foodsources.size() != 0){
-    std::cout << this->foodsources.size() << "\n";
-  }
+  // if(this->foodsources.size() != 0){
+  //   std::cout << this->foodsources.size() << "\n";
+  // }
 
   tickoftheday += 1;
   double x = (double)tickoftheday / this->state->config.daylength;
