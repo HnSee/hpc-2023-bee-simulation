@@ -43,3 +43,5 @@ compile_commands.json
 
 # Visualization
 /media
+src/visualization/csv/*
+src/visualization/videoframes/*
