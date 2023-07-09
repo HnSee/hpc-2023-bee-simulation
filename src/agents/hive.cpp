@@ -14,23 +14,6 @@ void Hive::init(int totalbees) {
 
 // collecting the bees
 Coordinates<double> Hive::move(ChunkBounds worldBounds) {
-  auto result = this->state->agents.range(pos, 0.1);
-  int size = result->size();
-
-  for (int k = 0; k < size; k++) {
-    if (result->at(k).value->gettype() == AgentType::Bee) {
-      std::shared_ptr<Agent> a = result->at(k).value;
-      std::shared_ptr<Bee> b = std::dynamic_pointer_cast<Bee>(a);
-
-      if (b->searching == false) {
-        this->totalfood += b->food;
-
-        PointValue<double, Agent> p =
-            PointValue<double, Agent>(result->at(k).value->getPosition(), a);
-        this->state->agents.removeByPointValue(p);
-      }
-    }
-  }
   return this->pos;
 }
 
@@ -90,6 +73,34 @@ void Hive::update() {
 
     this->activebees += 1;
   }
+
+  auto result = this->state->agents.range(pos, 1);
+  int size = result->size();
+
+  for (int k = 0; k < size; k++) {
+    if (result->at(k).value->gettype() == AgentType::Bee) {
+      
+      std::shared_ptr<Agent> a = result->at(k).value;
+      std::shared_ptr<Bee> b = std::dynamic_pointer_cast<Bee>(a);
+
+      if (b->searching == false && b->worker) {
+        this->totalfood += b->food;
+
+        PointValue<double, Agent> p =
+            PointValue<double, Agent>(result->at(k).value->getPosition(), a);
+        this->state->agents.removeByPointValue(p);
+      }
+
+      if (b->searching == false && !b->worker && b->found) {
+        this->add_fs(b->destination);
+        
+        PointValue<double, Agent> p =
+            PointValue<double, Agent>(result->at(k).value->getPosition(), a);
+        this->state->agents.removeByPointValue(p);
+      }
+    }
+  }
+
   return;
 }
 

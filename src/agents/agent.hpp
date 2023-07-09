@@ -34,10 +34,10 @@ public:
   void setState(WorldState *state);
 
   friend std::ostream &operator<<(std::ostream &output, const Agent &a);
-
+  Coordinates<double> pos;
+  
 protected:
   WorldState *state;
-  Coordinates<double> pos;
 };
 
 // returns the position of the agent 1 meter in one direction -> speed of agent

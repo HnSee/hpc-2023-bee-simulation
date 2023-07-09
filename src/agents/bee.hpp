@@ -33,6 +33,9 @@ public:
   // wether the bee is flying to the destination or the hive
   bool searching;
 
+  // did the bee find food
+  bool found;
+
   // whether or not the bee is a scout
   bool worker;
 

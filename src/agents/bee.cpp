@@ -10,33 +10,23 @@ void Bee::init(Coordinates<double> hivepos, Coordinates<double> destination,
   this->worker = worker;
   this->food = 0;
   this->pos = posi;
+  this->found = false;
   //std::cout << pos.x << "   " << pos.y << "\n";
 }
 
 Coordinates<double> Bee::move(ChunkBounds worldBounds) {
-
   if (worker) {
-    if (searching) {
+    if (searching){
       pos = getmovementvector(pos, destination);
 
-      if (pos.x == destination.x && pos.y == destination.y) {
+      if (pos.x < destination.x + 0.1 && pos.x > destination.x - 0.1 &&
+          pos.y < destination.y + 0.1 && pos.y > destination.y - 0.1) {
+        // has to search
         food = 1;
         searching = false;
       }
     } else {
       pos = getmovementvector(pos, hivepos);
-
-      RangeResult<double, Flower> *result =
-          this->state->agents.rangeSubtype<Flower>(pos, 0.1);
-
-      for (auto &f : *result) {
-        if (f.value->size > 100) {
-          this->food += 10;
-          f.value->size -= 10;
-        }
-      }
-
-      this->searching = false;
     }
   } else {
     if (searching) {
@@ -55,11 +45,10 @@ Coordinates<double> Bee::move(ChunkBounds worldBounds) {
         if (result->at(k).value->gettype() == AgentType::Flower) {
           std::shared_ptr<Agent> a = result->at(k).value;
           std::shared_ptr<Flower> f = std::dynamic_pointer_cast<Flower>(a);
-
-          if (f->size > 100) {
-            this->food += 10;
-            f->size -= 10;
-          }
+          this->searching = false;
+          this->destination = result->at(k).value->pos;
+          this->found = true;
+          std::cout << "SHOULD BE COLLECTED IN THE FUTURE!!!\n\n\n\n\n";
         }
       }
 
