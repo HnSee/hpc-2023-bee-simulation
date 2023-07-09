@@ -31,7 +31,6 @@ Coordinates<double> Hive::move(ChunkBounds worldBounds) {
       }
     }
   }
-
   return this->pos;
 }
 
@@ -39,6 +38,10 @@ int Hive::getsize() { return ds->size(); }
 
 // spawing new bees
 void Hive::update() {
+  if(this->foodsources.size() != 0){
+    std::cout << this->foodsources.size() << "\n";
+  }
+
   tickoftheday += 1;
   double x = (double)tickoftheday / this->state->config.daylength;
   int release = totalbees * (-3 * (x - 0.5) * (x - 0.5) + 1);
@@ -47,42 +50,39 @@ void Hive::update() {
     // release bees
     //  calc the percentage the bee is a scout
     int beespersource = 100;
-    double scoutpercentage =
-        ((double)totalbees - this->foodsources.size() * beespersource) /
-        totalbees;
+    double scoutpercentage = ((double)totalbees - this->foodsources.size() * beespersource) / totalbees;
+    
+    // calculate the new position of the bee
     double t = (double)(std::rand() % 10000) / 10000;
+    std::random_device rd;
+    std::mt19937 e2(rd());
+    std::uniform_real_distribution<double> unif(0, 1);
+    // Getting a random double value
+    double randomX = unif(e2);
+    double randomY = unif(e2);
+    Coordinates<double> newBeePosition{randomX + this->pos.x,
+                                        this->pos.y + randomY};
 
+    
     if ((totalbees - this->foodsources.size() > 0 && t < scoutpercentage) ||
         this->foodsources.size() == 0) {
-
-      std::random_device rd;
-      std::mt19937 e2(rd());
-      std::uniform_real_distribution<double> unif(0, 1);
-
-      // Getting a random double value
-      double randomX = unif(e2);
-      double randomY = unif(e2);
-      Coordinates<double> newBeePosition{randomX + this->pos.x,
-                                         this->pos.y + randomY};
-      // std::cout << "Hiveposition: " << this->pos.x << "\n";
 
       std::shared_ptr<Bee> newBee =
           std::make_shared<Bee>(this->state, newBeePosition);
 
       newBee->init(Coordinates<double>{newBeePosition.x, newBeePosition.y},
                    Coordinates<double>{newBeePosition.x, newBeePosition.y},
-                   true, false);
+                   true, false, Coordinates<double>{newBeePosition.x, newBeePosition.y});
 
       PointValue<double, Agent> newPointValue(newBeePosition, newBee);
       this->state->agents.add(newPointValue);
     } else {
-
       Coordinates<double> newBeePosition{pos.x, pos.y};
       std::shared_ptr<Bee> newBee =
           std::make_shared<Bee>(this->state, newBeePosition);
 
       newBee->init(Coordinates<double>{pos.x, pos.y}, this->rand_fs(), true,
-                   true);
+                   true, Coordinates<double>{newBeePosition.x, newBeePosition.y});
 
       PointValue<double, Agent> newPointValue(newBeePosition, newBee);
       this->state->agents.add(newPointValue);

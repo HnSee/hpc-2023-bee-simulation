@@ -3,12 +3,14 @@
 #include "src/agents/agent.hpp"
 
 void Bee::init(Coordinates<double> hivepos, Coordinates<double> destination,
-               bool searching, bool worker) {
+               bool searching, bool worker, Coordinates<double> posi) {
   this->hivepos = hivepos;
   this->destination = destination;
   this->searching = searching;
   this->worker = worker;
   this->food = 0;
+  this->pos = posi;
+  //std::cout << pos.x << "   " << pos.y << "\n";
 }
 
 Coordinates<double> Bee::move(ChunkBounds worldBounds) {
@@ -38,12 +40,14 @@ Coordinates<double> Bee::move(ChunkBounds worldBounds) {
     }
   } else {
     if (searching) {
-
+      
+      //std::cout << pos.x << "  " << pos.y << "\n";
       pos = getmovementvector(pos, destination);
+      //std::cout << pos.x << "  " << pos.y << "\n";
+      //std::cout << "\n";
 
       // check if food is near
-      // if food is near, store position in destination,
-
+      // if food is near, store position in destination
       auto result = this->state->agents.range(pos, 0.1);
       int size = result->size();
 
@@ -81,6 +85,8 @@ Coordinates<double> Bee::move(ChunkBounds worldBounds) {
   pos.clamp(worldBounds.xMin, worldBounds.xMax, worldBounds.yMin,
             worldBounds.yMax);
 
+
+  //std::cout << pos.x << "    " << pos.y << "\n";
   return pos;
 }
 

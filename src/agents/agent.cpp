@@ -35,15 +35,11 @@ void Agent::setPosition(Coordinates<double> newPosition) {
 
 void Agent::setState(WorldState *newState) { this->state = newState; }
 
-Coordinates<double> getmovementvector(Coordinates<double> pos,
+Coordinates<double> getmovementvector(Coordinates<double> posi,
                                       Coordinates<double> target) {
-
-  if (pos.x != pos.x) {
-    std::cout << "get move vec!\n";
-  }
   double x, y, pyt;
-  x = target.x - pos.x;
-  y = target.y - pos.y;
+  x = target.x - posi.x;
+  y = target.y - posi.y;
   pyt = sqrt((x * x) + (y * y));
 
   std::random_device rd;
@@ -54,14 +50,13 @@ Coordinates<double> getmovementvector(Coordinates<double> pos,
   double randomX = unif(e2);
   double randomY = unif(e2);
 
-  x *= 5;
-  y *= 5;
+  //x *= 5;
+  //y *= 5;
 
   if (pyt < 1) {
-    return Coordinates<double>{pos.x + x + randomX, pos.y + y + randomY};
-
+    return     Coordinates<double> {posi.x + x + randomX, posi.y + y + randomY};
   } else {
-    return Coordinates<double>{(pos.x + x) / (pyt + 1) + randomX,
-                               (pos.y + y) / (pyt + 1) + randomY};
+    return Coordinates<double>{posi.x + ( + x) / (pyt + 1) + randomX,
+                               posi.y+ ( + y) / (pyt + 1) + randomY};
   }
 }

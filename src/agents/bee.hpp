@@ -50,7 +50,7 @@ public:
   Coordinates<double> destination;
 
   void init(Coordinates<double> hive, Coordinates<double> destination,
-            bool searching, bool worker);
+            bool searching, bool worker, Coordinates<double> posi);
 
   Coordinates<double> move(ChunkBounds worldBounds) override;
 

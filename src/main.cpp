@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
   spdlog::debug("Seeding initial agents...");
   SeedingConfiguration seedingConfig;
   seedingConfig.seed = static_cast<int>(time(nullptr));
-  seedingConfig.flowerCount = 5;
+  seedingConfig.flowerCount = 300;
   seedingConfig.hiveCount = 0;
 
   if (rank == 0) {
@@ -155,14 +155,14 @@ int main(int argc, char **argv) {
     // Basic tick
     std::vector<AgentToTransfer> agentsToTransfer = state.tick();
 
-    // std::string a = state.agents.toCsv();
+    std::string a = state.agents.toCsv();
 
-    // std::ofstream myfile;
-    // long filename = 1000000+tick;
-    // spdlog::debug("src/visualization/csv/" + std::to_string(filename));
-    // myfile.open ( "src/visualization/csv/" + std::to_string(filename));
-    // myfile << a;
-    // myfile.close();
+    std::ofstream myfile;
+    long filename = 1000000+tick;
+    spdlog::debug("src/visualization/csv/" + std::to_string(filename));
+    myfile.open ( "src/visualization/csv/" + std::to_string(filename));
+    myfile << a;
+    myfile.close();
 
     // Transfer necessary agents
     for (int receiver = 0; receiver < processes; ++receiver) {
