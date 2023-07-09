@@ -155,14 +155,14 @@ int main(int argc, char **argv) {
     // Basic tick
     std::vector<AgentToTransfer> agentsToTransfer = state.tick();
 
-    std::string a = state.agents.toCsv();
+    // std::string a = state.agents.toCsv();
 
-    std::ofstream myfile;
-    long filename = 1000000+tick;
-    spdlog::debug("src/visualization/csv/" + std::to_string(filename));
-    myfile.open ( "src/visualization/csv/" + std::to_string(filename));
-    myfile << a;
-    myfile.close();
+    // std::ofstream myfile;
+    // long filename = 1000000+tick;
+    // spdlog::debug("src/visualization/csv/" + std::to_string(filename));
+    // myfile.open ( "src/visualization/csv/" + std::to_string(filename));
+    // myfile << a;
+    // myfile.close();
 
     // Transfer necessary agents
     for (int receiver = 0; receiver < processes; ++receiver) {
@@ -183,6 +183,7 @@ int main(int argc, char **argv) {
       if (rank == receiver) {
         std::vector<int> sizes(processes);
         std::vector<int> displs(processes);
+
         for (int sender = 0; sender < processes; ++sender) {
           int count = 0;
           if (sender != receiver) {
@@ -190,7 +191,13 @@ int main(int argc, char **argv) {
                      MPI_STATUS_IGNORE);
           }
           sizes[sender] = sizeof(Bee) * count;
-          displs[sender] = sizes[sender] * sender;
+          // displs[sender] = sizes[sender] * sender;
+        }
+
+        int currentBytePosition = 0;
+        for (int sender = 0; sender < processes; ++sender) {
+          displs[sender] = currentBytePosition;
+          currentBytePosition += sizes[sender];
         }
 
         int sum = 0;
@@ -199,9 +206,10 @@ int main(int argc, char **argv) {
         }
 
         if (sum > 0) {
-          spdlog::info("Rank {} is about to receive {} bees:", rank, sum);
+          spdlog::info("Rank {} is about to receive {} bees:", rank,
+                       sum / sizeof(Bee));
           for (int i = 0; i < sizes.size(); ++i) {
-            spdlog::info("  {} from rank {}, inserted at {}", sizes[i], i,
+            spdlog::info("  {} Bytes from rank {}, inserted at {}", sizes[i], i,
                          displs[i]);
           }
         }
@@ -216,14 +224,9 @@ int main(int argc, char **argv) {
         if (sum > 0)
           spdlog::debug("Current agent count for chunk {}: {}", rank,
                         state.agents.count());
-        for (int i = 0; i < sum; ++i) {
-          // spdlog::debug("Creating bee: ({}|{}), {}",
-          // beesToReceive[i].hivepos.x,
-          //               beesToReceive[i].hivepos.y,
-          //               beesToReceive[i].searching);
+        for (int i = 0; i < sum / sizeof(Bee); ++i) {
           new (&beesToReceive[i]) Bee;
           std::shared_ptr<Bee> newBee = std::make_shared<Bee>(beesToReceive[i]);
-          // spdlog::debug("Bee created");
           newBee->setState(&state);
           PointValue<double, Agent> pvToAdd(newBee->getPosition(), newBee);
           if (i == 0) {
@@ -248,12 +251,9 @@ int main(int argc, char **argv) {
                        beesToTransfer[0].getPosition().y);
         }
 
-        // std::vector<Bee_struct> transferdata;
-        // for (int k = 0; k < beesToTransfer.size(); k++) {
-        //   transferdata.push_back(beesToTransfer[k]->get_struct());
-        // }
+        int size = count * sizeof(Bee);
 
-        MPI_Gatherv(&beesToTransfer[0], count, MPI_BYTE, nullptr, nullptr,
+        MPI_Gatherv(&beesToTransfer[0], size, MPI_BYTE, nullptr, nullptr,
                     nullptr, MPI_BYTE, receiver, MPI_COMM_WORLD);
       }
 

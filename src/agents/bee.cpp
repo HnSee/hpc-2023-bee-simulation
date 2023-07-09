@@ -48,7 +48,7 @@ Coordinates<double> Bee::move(ChunkBounds worldBounds) {
           this->searching = false;
           this->destination = result->at(k).value->pos;
           this->found = true;
-          std::cout << "SHOULD BE COLLECTED IN THE FUTURE!!!\n\n\n\n\n";
+          // std::cout << "SHOULD BE COLLECTED IN THE FUTURE!!!\n\n\n\n\n";
         }
       }
 

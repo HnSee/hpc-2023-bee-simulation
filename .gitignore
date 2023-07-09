@@ -41,5 +41,7 @@ compile_commands.json
 /*.svg
 /*.png
 
+# Visualization
+/media
 src/visualization/csv/*
 src/visualization/videoframes/*
