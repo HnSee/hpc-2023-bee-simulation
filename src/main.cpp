@@ -5,6 +5,7 @@
 #include <mpi.h>
 #include <numeric>
 #include <spdlog/spdlog.h>
+#include <spdlog/stopwatch.h>
 #include <sstream>
 
 #include "agents/bee.hpp"
@@ -32,15 +33,23 @@ int main(int argc, char **argv) {
       "r,relaxations", "Number of relaxations to perform",
       cxxopts::value<unsigned int>()->default_value("1"))(
       "s,seed", "Seed to use for the world generation",
-      cxxopts::value<unsigned int>());
+      cxxopts::value<unsigned int>())("hives", "Number of hives",
+                                      cxxopts::value<unsigned int>())(
+      "t,ticks", "Number of ticks to execute",
+      cxxopts::value<unsigned int>()->default_value("50000"))(
+      "json", "Output logs in JSON format",
+      cxxopts::value<bool>()->default_value("false"));
 
   cxxopts::ParseResult result = options.parse(argc, argv);
 
-  spdlog::set_level(spdlog::level::debug);
-  spdlog::set_level(spdlog::level::debug);
   if (result["v"].as<bool>()) {
     spdlog::set_level(spdlog::level::debug);
     spdlog::debug("Debug logging level activated");
+  }
+
+  if (result["json"].as<bool>()) {
+    // spdlog::set_pattern("{\"message\": \"%v\", \"time\": \"%t\"}");
+    spdlog::set_pattern("{\"message\": \"%v\"}");
   }
 
   unsigned int seed;
@@ -54,7 +63,9 @@ int main(int argc, char **argv) {
   unsigned int edgeLength = result["e"].as<unsigned int>();
   unsigned int biomes = result["b"].as<unsigned int>();
   unsigned int relaxations = result["r"].as<unsigned int>();
-  unsigned int ticks = 50000;
+  unsigned int hives = result["hives"].as<unsigned int>();
+  unsigned int ticks = result["ticks"].as<unsigned int>();
+  bool json = result["json"].as<bool>();
 
   ChunkBounds worldBounds{0, edgeLength, 0, edgeLength};
 
@@ -147,10 +158,10 @@ int main(int argc, char **argv) {
 
   MPI_Barrier(MPI_COMM_WORLD);
 
+  spdlog::stopwatch sw;
   for (unsigned int tick = 0; tick <= ticks; ++tick) {
-    if (rank == 0 && tick % 100 == 0) {
-      spdlog::debug("Current tick: {}", tick);
-    }
+    if (rank == 0)
+      spdlog::info("tick: {} ({})", tick, sw);
 
     // Basic tick
     std::vector<AgentToTransfer> agentsToTransfer = state.tick();
@@ -205,14 +216,15 @@ int main(int argc, char **argv) {
           sum += c;
         }
 
-        if (sum > 0) {
-          spdlog::info("Rank {} is about to receive {} bees:", rank,
-                       sum / sizeof(Bee));
-          for (int i = 0; i < sizes.size(); ++i) {
-            spdlog::info("  {} Bytes from rank {}, inserted at {}", sizes[i], i,
-                         displs[i]);
-          }
-        }
+        // if (sum > 0) {
+        //   spdlog::info("Rank {} is about to receive {} bees:", rank,
+        //                sum / sizeof(Bee));
+        //   for (int i = 0; i < sizes.size(); ++i) {
+        //     spdlog::info("  {} Bytes from rank {}, inserted at {}", sizes[i],
+        //     i,
+        //                  displs[i]);
+        //   }
+        // }
 
         beesToReceive = new Bee[sum];
 
