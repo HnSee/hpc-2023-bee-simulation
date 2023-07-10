@@ -160,7 +160,9 @@ int main(int argc, char **argv) {
 
   spdlog::stopwatch sw;
   for (unsigned int tick = 0; tick <= ticks; ++tick) {
-    if (rank == 0)
+    if (rank == 0 && tick == 1)
+      sw = spdlog::stopwatch(); 
+    if (rank == 0 && tick > 0)
       spdlog::info("tick: {} ({})", tick, sw);
 
     // Basic tick

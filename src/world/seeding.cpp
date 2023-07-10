@@ -13,11 +13,18 @@ std::vector<AgentTemplate> generateInitialAgents(int xMin, int xMax, int yMin,
   std::uniform_real_distribution<double> unfX(xMin, xMax);
   std::uniform_real_distribution<double> unfY(yMin, yMax);
 
-  for (int i = 0; i < config.hiveCount; ++i) {
-    double randomX = unfX(rng);
-    double randomY = unfY(rng);
+  if (config.hiveCount == 1) {
+    double posX = (xMin + xMax) / 4 * 3;
+    double posY = (yMin + yMax) / 4 * 3;
 
-    result.emplace_back(randomX, randomY, AgentType::Hive);
+    result.emplace_back(posX, posY, AgentType::Hive);
+  } else {
+    for (int i = 0; i < config.hiveCount; ++i) {
+      double randomX = unfX(rng);
+      double randomY = unfY(rng);
+
+      result.emplace_back(randomX, randomY, AgentType::Hive);
+    }
   }
 
   for (int i = 0; i < config.flowerCount; ++i) {
