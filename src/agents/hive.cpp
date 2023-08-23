@@ -21,10 +21,6 @@ int Hive::getsize() { return ds->size(); }
 
 // spawing new bees
 void Hive::update() {
-  // if(this->foodsources.size() != 0){
-  //   std::cout << this->foodsources.size() << "\n";
-  // }
-
   tickoftheday += 1;
   double x = (double)tickoftheday / this->state->config.daylength;
   int release = totalbees * (-3 * (x - 0.5) * (x - 0.5) + 1);
@@ -32,7 +28,7 @@ void Hive::update() {
   for (int k = 0; release > this->activebees; k++) {
     // release bees
     //  calc the percentage the bee is a scout
-    int beespersource = 100;
+    int beespersource = 200; //this->state->config.beespersource;
     double scoutpercentage = ((double)totalbees - this->foodsources.size() * beespersource) / totalbees;
     
     // calculate the new position of the bee
@@ -89,6 +85,7 @@ void Hive::update() {
         PointValue<double, Agent> p =
             PointValue<double, Agent>(result->at(k).value->getPosition(), a);
         this->state->agents.removeByPointValue(p);
+        this->activebees -= 1;
       }
 
       if (b->searching == false && !b->worker && b->found) {
@@ -97,6 +94,7 @@ void Hive::update() {
         PointValue<double, Agent> p =
             PointValue<double, Agent>(result->at(k).value->getPosition(), a);
         this->state->agents.removeByPointValue(p);
+        this->activebees -= 1;
       }
     }
   }

@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
   spdlog::debug("Seeding initial agents...");
   SeedingConfiguration seedingConfig;
   seedingConfig.seed = static_cast<int>(time(nullptr));
-  seedingConfig.flowerCount = 300;
+  seedingConfig.flowerCount = 3000;
   seedingConfig.hiveCount = 0;
 
   if (rank == 0) {
@@ -148,14 +148,21 @@ int main(int argc, char **argv) {
   MPI_Barrier(MPI_COMM_WORLD);
 
   for (unsigned int tick = 0; tick <= ticks; ++tick) {
+    // zeit messen 1
+
     if (rank == 0 && tick % 100 == 0) {
       spdlog::debug("Current tick: {}", tick);
     }
 
     // Basic tick
     std::vector<AgentToTransfer> agentsToTransfer = state.tick();
+<<<<<<< HEAD
 
     // std::string a = state.agents.toCsv();
+=======
+    
+    std::string a = state.agents.toCsv();
+>>>>>>> 07a4671 (logik works)
 
     // std::ofstream myfile;
     // long filename = 1000000+tick;
@@ -259,6 +266,8 @@ int main(int argc, char **argv) {
 
       // MPI_Gatherv(&agentsToSend[0], sizeof(agentsToSend), MPI_BYTE, );
     }
+    // zeit messen 2
+
   }
 
   spdlog::info("Final agent count: {}", state.agents.count());
