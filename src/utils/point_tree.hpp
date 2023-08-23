@@ -439,9 +439,7 @@ private:
     this->traverseParentChildNodePairs(node->right, f);
   }
 
-  void traverseNodes(
-      const std::unique_ptr<Node> &node, const Axis axis,
-      const std::function<void(const std::unique_ptr<Node> &, Axis)> &f) {
+  void traverseNodes( const std::unique_ptr<Node> &node, const Axis axis, const std::function<void(const std::unique_ptr<Node> &, Axis)> &f) {
     if (!node) {
       return;
     }

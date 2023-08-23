@@ -21,7 +21,6 @@ Coordinates<double> Bee::move(ChunkBounds worldBounds) {
 
       if (pos.x < destination.x + 0.1 && pos.x > destination.x - 0.1 &&
           pos.y < destination.y + 0.1 && pos.y > destination.y - 0.1) {
-        // has to search
         food = 1;
         searching = false;
       }
@@ -65,18 +64,9 @@ Coordinates<double> Bee::move(ChunkBounds worldBounds) {
 
   pos.clamp(worldBounds.xMin, worldBounds.xMax, worldBounds.yMin,
             worldBounds.yMax);
-
-
-  //std::cout << pos.x << "    " << pos.y << "\n";
   return pos;
 }
 
 void Bee::update() { return; }
-
-Bee_struct Bee::get_struct() {
-  Bee_struct bs = {this->searching,  this->worker, this->activebbes,
-                   this->foodstore,  this->food,   this->hivepos,
-                   this->destination};
-}
 
 AgentType Bee::gettype() const { return AgentType::Bee; }
