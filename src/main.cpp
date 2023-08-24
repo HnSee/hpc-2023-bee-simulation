@@ -42,6 +42,10 @@ int main(int argc, char **argv) {
 
   cxxopts::ParseResult result = options.parse(argc, argv);
 
+<<<<<<< HEAD
+=======
+  spdlog::set_level(spdlog::level::info);
+>>>>>>> 11ff9b8 (log for transfer of agents)
   if (result["v"].as<bool>()) {
     spdlog::set_level(spdlog::level::debug);
     spdlog::debug("Debug logging level activated");
@@ -61,11 +65,15 @@ int main(int argc, char **argv) {
 
   // TODO: EXTERNALISE CONFIGURATION
   unsigned int edgeLength = result["e"].as<unsigned int>();
+<<<<<<< HEAD
   unsigned int biomes = result["b"].as<unsigned int>();
   unsigned int relaxations = result["r"].as<unsigned int>();
   unsigned int hives = result["hives"].as<unsigned int>();
   unsigned int ticks = result["ticks"].as<unsigned int>();
   bool json = result["json"].as<bool>();
+=======
+  unsigned int ticks = 50000;
+>>>>>>> 11ff9b8 (log for transfer of agents)
 
   ChunkBounds worldBounds{0, edgeLength, 0, edgeLength};
 
@@ -160,10 +168,16 @@ int main(int argc, char **argv) {
 
   spdlog::stopwatch sw;
   for (unsigned int tick = 0; tick <= ticks; ++tick) {
+<<<<<<< HEAD
     if (rank == 0 && tick == 1)
       sw = spdlog::stopwatch(); 
     if (rank == 0 && tick > 0)
       spdlog::info("tick: {} ({})", tick, sw);
+=======
+    if (rank == 0 && tick % 100 == 0) {
+      spdlog::debug("Current tick: {}", tick);
+    }
+>>>>>>> 11ff9b8 (log for transfer of agents)
 
     // Basic tick
     std::vector<AgentToTransfer> agentsToTransfer = state.tick();
@@ -211,6 +225,7 @@ int main(int argc, char **argv) {
           sum += c;
         }
 
+<<<<<<< HEAD
         // if (sum > 0) {
         //   spdlog::info("Rank {} is about to receive {} bees:", rank,
         //                sum / sizeof(Bee));
@@ -220,6 +235,16 @@ int main(int argc, char **argv) {
         //                  displs[i]);
         //   }
         // }
+=======
+        if (sum > 0) {
+          spdlog::debug("Rank {} is about to receive {} bees:", rank,
+                       sum / sizeof(Bee));
+          for (int i = 0; i < sizes.size(); ++i) {
+            spdlog::debug("  {} Bytes from rank {}, inserted at {}", sizes[i], i,
+                         displs[i]);
+          }
+        }
+>>>>>>> 11ff9b8 (log for transfer of agents)
 
         beesToReceive = new Bee[sum];
 
@@ -237,7 +262,7 @@ int main(int argc, char **argv) {
           newBee->setState(&state);
           PointValue<double, Agent> pvToAdd(newBee->getPosition(), newBee);
           if (i == 0) {
-            spdlog::info("First receiving bee's position: ({}|{})",
+            spdlog::debug("First receiving bee's position: ({}|{})",
                          pvToAdd.value->getPosition().x,
                          pvToAdd.value->getPosition().y);
           }
@@ -253,7 +278,7 @@ int main(int argc, char **argv) {
         MPI_Send(&count, 1, MPI_INT, receiver, 0, MPI_COMM_WORLD);
 
         if (count > 0) {
-          spdlog::info("First sending bee's position: ({}|{})",
+          spdlog::debug("First sending bee's position: ({}|{})",
                        beesToTransfer[0].getPosition().x,
                        beesToTransfer[0].getPosition().y);
         }
@@ -264,6 +289,7 @@ int main(int argc, char **argv) {
                     nullptr, MPI_BYTE, receiver, MPI_COMM_WORLD);
       }
     }
+    spdlog::debug("Process: {} | Agent count: {}",rank, state.agents.count());
   }
 
   spdlog::info("Final agent count: {}", state.agents.count());

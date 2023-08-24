@@ -7,7 +7,7 @@
 #include <iostream>
 
 class WorldState;
-
+ 
 class Agent {
 public:
   Agent() = default;
