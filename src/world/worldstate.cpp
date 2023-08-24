@@ -55,11 +55,6 @@ std::vector<AgentToTransfer> WorldState::tick() {
 
   auto stop = std::chrono::high_resolution_clock::now();
 
-  // spdlog::debug(
-  //     "Update time: {}µs",
-  //     std::chrono::duration_cast<std::chrono::microseconds>(stop - start)
-  //         .count());
-
   start = std::chrono::high_resolution_clock::now();
 
   // Move phase
@@ -83,11 +78,6 @@ std::vector<AgentToTransfer> WorldState::tick() {
       std::make_move_iterator(agentsOfCurrentChunk.end()));
 
   stop = std::chrono::high_resolution_clock::now();
-
-  // spdlog::debug(
-  //     "Move time: {}µs",
-  //     std::chrono::duration_cast<std::chrono::microseconds>(stop - start)
-  //         .count());
 
   return agentsForChunkTransfer;
 }

@@ -26,8 +26,6 @@ using Color = std::array<double, 3>;
 class WorldGenerator {
 
 public:
-  // TODO: move settings in this constructor instead of hardcoded values below
-  // WorldGenerator();
   std::unique_ptr<WorldMap> generateWorld();
 
 private:
@@ -36,7 +34,6 @@ private:
   unsigned int size = 1000;
   unsigned int biomes = 512;
   unsigned short relaxations = 4;
-  // double perlinPersistence = 0.5;
   int perlinOctaves = 8;
   unsigned short edgeDisplacement = 12;
   std::map<Biome, float> biomeProbabilities = {{Biome::Field, 25},

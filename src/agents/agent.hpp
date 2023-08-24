@@ -11,7 +11,7 @@ class WorldState;
 class Agent {
 public:
   Agent() = default;
-  Agent(WorldState *state, Coordinates<double> pos) : state(state), pos(pos) {}
+  Agent(WorldState *state, Coordinates<double> pos) : state(state), pos(pos) {} 
   virtual ~Agent() = default;
 
   // initialization of the Agent, function has to initialize all necessary

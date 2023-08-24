@@ -21,7 +21,6 @@ Coordinates<double> Bee::move(ChunkBounds worldBounds) {
 
       if (pos.x < destination.x + 0.1 && pos.x > destination.x - 0.1 &&
           pos.y < destination.y + 0.1 && pos.y > destination.y - 0.1) {
-        // has to search
         food = 1;
         searching = false;
       }
@@ -30,15 +29,11 @@ Coordinates<double> Bee::move(ChunkBounds worldBounds) {
     }
   } else {
     if (searching) {
-      
-      //std::cout << pos.x << "  " << pos.y << "\n";
       pos = getmovementvector(pos, destination);
-      //std::cout << pos.x << "  " << pos.y << "\n";
-      //std::cout << "\n";
 
       // check if food is near
       // if food is near, store position in destination
-      auto result = this->state->agents.range(pos, 0.1);
+      auto result = this->state->agents.range(pos, 1);
       int size = result->size();
 
       for (int k = 0; k < size; k++) {
@@ -48,7 +43,6 @@ Coordinates<double> Bee::move(ChunkBounds worldBounds) {
           this->searching = false;
           this->destination = result->at(k).value->pos;
           this->found = true;
-          // std::cout << "SHOULD BE COLLECTED IN THE FUTURE!!!\n\n\n\n\n";
         }
       }
 
@@ -56,12 +50,9 @@ Coordinates<double> Bee::move(ChunkBounds worldBounds) {
       // either generates next location or returns
       if (pos.x < destination.x + 1 && pos.x > destination.x - 1 &&
           pos.y < destination.y + 1 && pos.y > destination.y - 1) {
-        // std::cout << "new destination!" << "\n";
         if (this->state->config.scoutindurance > std::rand() % 101) {
-          // std::cout << "Destination: " << destination.x << "\n";
           destination.x += (std::rand() % 400) - 200;
           destination.y += (std::rand() % 400) - 200;
-          // std::cout << "Destination: " << destination.x << "\n";
         } else {
           searching = false;
         }
@@ -73,18 +64,9 @@ Coordinates<double> Bee::move(ChunkBounds worldBounds) {
 
   pos.clamp(worldBounds.xMin, worldBounds.xMax, worldBounds.yMin,
             worldBounds.yMax);
-
-
-  //std::cout << pos.x << "    " << pos.y << "\n";
   return pos;
 }
 
 void Bee::update() { return; }
-
-Bee_struct Bee::get_struct() {
-  Bee_struct bs = {this->searching,  this->worker, this->activebbes,
-                   this->foodstore,  this->food,   this->hivepos,
-                   this->destination};
-}
 
 AgentType Bee::gettype() const { return AgentType::Bee; }

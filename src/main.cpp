@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
 
   // Initialize MPI
   int mpiErr = MPI_Init(&argc, &argv);
-  checkForMPIError(mpiErr, "Initialization");
+  checkForMPIError(mpiErr, "Initialization"); 
 
   int processes;
   mpiErr = MPI_Comm_size(MPI_COMM_WORLD, &processes);
@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
   spdlog::debug("Seeding initial agents...");
   SeedingConfiguration seedingConfig;
   seedingConfig.seed = static_cast<int>(time(nullptr));
-  seedingConfig.flowerCount = 300;
+  seedingConfig.flowerCount = 3000;
   seedingConfig.hiveCount = 0;
 
   if (rank == 0) {
@@ -167,15 +167,9 @@ int main(int argc, char **argv) {
 
     // Basic tick
     std::vector<AgentToTransfer> agentsToTransfer = state.tick();
+    
+    std::string a = state.agents.toCsv();
 
-    // std::string a = state.agents.toCsv();
-
-    // std::ofstream myfile;
-    // long filename = 1000000+tick;
-    // spdlog::debug("src/visualization/csv/" + std::to_string(filename));
-    // myfile.open ( "src/visualization/csv/" + std::to_string(filename));
-    // myfile << a;
-    // myfile.close();
 
     // Transfer necessary agents
     for (int receiver = 0; receiver < processes; ++receiver) {
@@ -204,7 +198,6 @@ int main(int argc, char **argv) {
                      MPI_STATUS_IGNORE);
           }
           sizes[sender] = sizeof(Bee) * count;
-          // displs[sender] = sizes[sender] * sender;
         }
 
         int currentBytePosition = 0;
@@ -270,8 +263,6 @@ int main(int argc, char **argv) {
         MPI_Gatherv(&beesToTransfer[0], size, MPI_BYTE, nullptr, nullptr,
                     nullptr, MPI_BYTE, receiver, MPI_COMM_WORLD);
       }
-
-      // MPI_Gatherv(&agentsToSend[0], sizeof(agentsToSend), MPI_BYTE, );
     }
   }
 
