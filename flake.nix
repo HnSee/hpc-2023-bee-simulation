@@ -30,6 +30,8 @@
               openmpi
               fmt
               cairomm
+              cxxopts
+              spdlog
             ];
 
             mesonWrapMode = "default";

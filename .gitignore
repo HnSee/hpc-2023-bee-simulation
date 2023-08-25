@@ -45,3 +45,6 @@ compile_commands.json
 /media
 src/visualization/csv/*
 src/visualization/videoframes/*
+
+# Build outputs
+/result
