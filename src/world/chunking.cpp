@@ -3,7 +3,7 @@
 #include <cmath>
 
 std::pair<int, int> calculateClosestDivisors(int n) {
-  int a = static_cast<int>(std::round(std::sqrt(n)));
+  auto a = static_cast<int>(std::round(std::sqrt(n)));
 
   while (n % a > 0)
     a -= 1;
@@ -49,8 +49,8 @@ int calcualteChunkIndexOfPoint(int areaMaxX, int areaMaxY, int chunkCount,
   int chunkWidth = areaMaxX / chunkXCount;
   int chunkHeight = areaMaxY / chunkYCount;
 
-  int indexX = static_cast<int>(std::floor(x / chunkWidth));
-  int indexY = static_cast<int>(std::floor(y / chunkHeight));
+  auto indexX = static_cast<int>(std::floor(x / chunkWidth));
+  auto indexY = static_cast<int>(std::floor(y / chunkHeight));
 
   return indexY * chunkXCount + indexX;
 }

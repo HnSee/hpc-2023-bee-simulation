@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
       "e,edge-length", "Edge length of the map",
       cxxopts::value<unsigned int>()->default_value("1000"))(
       "b,biomes", "Number of biomes to generate",
-      cxxopts::value<unsigned int>()->default_value("100"))(
+      cxxopts::value<unsigned int>()->default_value("512"))(
       "r,relaxations", "Number of relaxations to perform",
       cxxopts::value<unsigned int>()->default_value("1"))(
       "s,seed", "Seed to use for the world generation",
@@ -51,25 +51,24 @@ int main(int argc, char **argv) {
 
   if (result["json"].as<bool>()) {
     // spdlog::set_pattern("{\"message\": \"%v\", \"time\": \"%t\"}");
-    spdlog::set_pattern("{\"message\": \"%v\"}");
+    spdlog::set_pattern(R"({"message": "%v"})");
   }
 
   unsigned int seed;
   if (result.count("s")) {
     seed = result["s"].as<unsigned int>();
   } else {
-    seed = (unsigned)time(NULL);
+    seed = (unsigned)time(nullptr);
   }
 
-  // TODO: EXTERNALISE CONFIGURATION
   unsigned int edgeLength = result["e"].as<unsigned int>();
-  unsigned int ticks = 50000;
+  unsigned int ticks = result["t"].as<unsigned int>();
 
   ChunkBounds worldBounds{0, edgeLength, 0, edgeLength};
 
   // Initialize MPI
   int mpiErr = MPI_Init(&argc, &argv);
-  checkForMPIError(mpiErr, "Initialization"); 
+  checkForMPIError(mpiErr, "Initialization");
 
   int processes;
   mpiErr = MPI_Comm_size(MPI_COMM_WORLD, &processes);
@@ -91,7 +90,14 @@ int main(int argc, char **argv) {
   std::size_t worldCellCount;
   if (rank == 0) {
     spdlog::debug("Starting world generator...");
-    WorldGenerator generator;
+
+    GeneratorConfig generatorConfig;
+    generatorConfig.biomes = result["b"].as<unsigned int>();
+    generatorConfig.seed = seed;
+    generatorConfig.size = result["e"].as<unsigned int>();
+
+    WorldGenerator generator(generatorConfig);
+
     spdlog::debug("World generator started.");
 
     spdlog::info("Generating world...");
@@ -143,7 +149,6 @@ int main(int argc, char **argv) {
     seedingConfig.hiveCount = 1;
   }
 
-  std::srand(50);
   std::vector<AgentTemplate> initialAgents =
       generateInitialAgents(chunkBounds.xMin, chunkBounds.xMax,
                             chunkBounds.yMin, chunkBounds.yMax, seedingConfig);
@@ -156,6 +161,10 @@ int main(int argc, char **argv) {
 
   MPI_Barrier(MPI_COMM_WORLD);
 
+  if (rank == 0) {
+    spdlog::info("Beginning simulation for {} ticks.", ticks);
+  }
+
   spdlog::stopwatch sw;
   for (unsigned int tick = 0; tick <= ticks; ++tick) {
     if (rank == 0 && tick % 100 == 0) {
@@ -164,9 +173,8 @@ int main(int argc, char **argv) {
 
     // Basic tick
     std::vector<AgentToTransfer> agentsToTransfer = state.tick();
-    
-    std::string a = state.agents.toCsv();
 
+    std::string a = state.agents.toCsv();
 
     // Transfer necessary agents
     for (int receiver = 0; receiver < processes; ++receiver) {
@@ -204,19 +212,9 @@ int main(int argc, char **argv) {
         }
 
         int sum = 0;
-        for (auto &c : sizes) {
+        for (auto const &c : sizes) {
           sum += c;
         }
-
-        // if (sum > 0) {
-        //   spdlog::info("Rank {} is about to receive {} bees:", rank,
-        //                sum / sizeof(Bee));
-        //   for (int i = 0; i < sizes.size(); ++i) {
-        //     spdlog::info("  {} Bytes from rank {}, inserted at {}", sizes[i],
-        //     i,
-        //                  displs[i]);
-        //   }
-        // }
 
         beesToReceive = new Bee[sum];
 
@@ -230,13 +228,13 @@ int main(int argc, char **argv) {
                         state.agents.count());
         for (int i = 0; i < sum / sizeof(Bee); ++i) {
           new (&beesToReceive[i]) Bee;
-          std::shared_ptr<Bee> newBee = std::make_shared<Bee>(beesToReceive[i]);
+          auto newBee = std::make_shared<Bee>(beesToReceive[i]);
           newBee->setState(&state);
           PointValue<double, Agent> pvToAdd(newBee->getPosition(), newBee);
           if (i == 0) {
             spdlog::debug("First receiving bee's position: ({}|{})",
-                         pvToAdd.value->getPosition().x,
-                         pvToAdd.value->getPosition().y);
+                          pvToAdd.value->getPosition().x,
+                          pvToAdd.value->getPosition().y);
           }
           state.agents.add(pvToAdd);
         }
@@ -246,13 +244,13 @@ int main(int argc, char **argv) {
           spdlog::debug("New agent count for chunk {}: {}", rank,
                         state.agents.count());
       } else {
-        int count = static_cast<int>(beesToTransfer.size());
+        auto count = static_cast<int>(beesToTransfer.size());
         MPI_Send(&count, 1, MPI_INT, receiver, 0, MPI_COMM_WORLD);
 
         if (count > 0) {
           spdlog::debug("First sending bee's position: ({}|{})",
-                       beesToTransfer[0].getPosition().x,
-                       beesToTransfer[0].getPosition().y);
+                        beesToTransfer[0].getPosition().x,
+                        beesToTransfer[0].getPosition().y);
         }
 
         int size = count * sizeof(Bee);
@@ -261,7 +259,7 @@ int main(int argc, char **argv) {
                     nullptr, MPI_BYTE, receiver, MPI_COMM_WORLD);
       }
     }
-    spdlog::debug("Process: {} | Agent count: {}",rank, state.agents.count());
+    spdlog::debug("Process: {} | Agent count: {}", rank, state.agents.count());
   }
 
   spdlog::info("Final agent count: {}", state.agents.count());

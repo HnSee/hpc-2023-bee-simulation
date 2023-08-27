@@ -11,12 +11,11 @@ void Bee::init(Coordinates<double> hivepos, Coordinates<double> destination,
   this->food = 0;
   this->pos = posi;
   this->found = false;
-  //std::cout << pos.x << "   " << pos.y << "\n";
 }
 
 Coordinates<double> Bee::move(ChunkBounds worldBounds) {
   if (worker) {
-    if (searching){
+    if (searching) {
       pos = getmovementvector(pos, destination);
 
       if (pos.x < destination.x + 0.1 && pos.x > destination.x - 0.1 &&
@@ -34,7 +33,7 @@ Coordinates<double> Bee::move(ChunkBounds worldBounds) {
       // check if food is near
       // if food is near, store position in destination
       auto result = this->state->agents.range(pos, 1);
-      int size = result->size();
+      std::size_t size = result->size();
 
       for (int k = 0; k < size; k++) {
         if (result->at(k).value->gettype() == AgentType::Flower) {

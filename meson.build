@@ -24,14 +24,10 @@ src = [
 
 mpi_dep = dependency('mpi', language: 'cpp')
 omp_dep = dependency('openmp')
-
-spdlog = subproject('spdlog')
-spdlog_dep = spdlog.get_variable('spdlog_dep')
-
-cxxopts = subproject('cxxopts')
-cxxopts_dep = cxxopts.get_variable('cxxopts_dep')
-
 cairo_dep = dependency('cairomm-1.0')
+
+spdlog_dep = dependency('spdlog', version: '>=1.12.0', fallback: ['spdlog', 'spdlog_dep'])
+cxxopts_dep = dependency('cxxopts', fallback: ['cxxopts', 'cxxopts_dep'])
 
 benchmarking = subproject('google-benchmark')
 benchmarking_dep = benchmarking.get_variable('google_benchmark_dep')

@@ -6,7 +6,7 @@
 
 const double DOUBLE_EPSILON = 0.0000001;
 
-enum Axis { X, Y };
+enum class Axis { X, Y };
 
 template <typename C> struct Coordinates {
   C x;
@@ -47,11 +47,6 @@ template <typename C> struct Coordinates {
                      std::pow(point2.y - point1.y, 2));
   }
 };
-
-// template <> bool Coordinates<double>::equals(const Coordinates<double> &c) {
-//   return std::abs(this->x - c.x) < DOUBLE_EPSILON &&
-//          std::abs(this->y - c.y) < DOUBLE_EPSILON;
-// }
 
 template <typename C>
 struct fmt::formatter<Coordinates<C>> : fmt::formatter<std::string> {

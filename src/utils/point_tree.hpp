@@ -44,7 +44,6 @@ template <typename C, typename V> struct PartialRangeResult {
   std::shared_ptr<V> value;
   double distance;
 
-public:
   PartialRangeResult(Coordinates<C> point, std::shared_ptr<V> value,
                      double distance)
       : point(point), value(value), distance(distance) {}
@@ -92,10 +91,10 @@ private:
     bool operator()(const PointValue<C, V> &p1,
                     const PointValue<C, V> &p2) const {
       switch (this->axis) {
-      case X:
+      case Axis::X:
         return p1.point.x < p2.point.x;
         break;
-      case Y:
+      case Axis::Y:
         return p1.point.y < p2.point.y;
         break;
       }
@@ -439,7 +438,9 @@ private:
     this->traverseParentChildNodePairs(node->right, f);
   }
 
-  void traverseNodes( const std::unique_ptr<Node> &node, const Axis axis, const std::function<void(const std::unique_ptr<Node> &, Axis)> &f) {
+  void traverseNodes(
+      const std::unique_ptr<Node> &node, const Axis axis,
+      const std::function<void(const std::unique_ptr<Node> &, Axis)> &f) {
     if (!node) {
       return;
     }

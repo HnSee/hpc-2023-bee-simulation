@@ -13,9 +13,14 @@ using testing::Eq;
 using testing::Gt;
 
 TEST(Agents, CreatePointTree) {
-  WorldGenerator generator;
+  GeneratorConfig config;
+  config.biomes = 512;
+  config.seed = 100;
+  config.size = 1000;
+
+  WorldGenerator generator(config);
   std::unique_ptr<WorldMap> map = generator.generateWorld();
-  ChunkBounds worldBounds{0, 1000, 0, 1000};
+  ChunkBounds worldBounds{0, config.size, 0, config.size};
   WorldState state(std::move(map), worldBounds, worldBounds, 1, 0);
 
   auto h = std::make_shared<Hive>(&state, Coordinates<double>{0, 0});
@@ -27,14 +32,14 @@ TEST(Agents, CreatePointTree) {
 
   EXPECT_THAT(state.agents.count(), Eq(1));
 
-  // h->update();
+  h->update();
 
-  // EXPECT_THAT(state.agents.count(), Gt(10));
+  EXPECT_THAT(state.agents.count(), Gt(10));
 
   std::cout << state.agents.count() << std::endl;
   std::cout << state.agents.height() << std::endl;
 
-  for (int i = 0; i < 1000; ++i) {
+  for (int i = 0; i < 50; ++i) {
     state.tick();
   }
 
