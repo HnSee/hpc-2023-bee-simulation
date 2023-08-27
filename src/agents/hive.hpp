@@ -28,9 +28,9 @@ public:
 
   Coordinates<double> move(ChunkBounds worldBounds) override;
 
-  int getsize();
+  int getsize() const;
 
-  void update();
+  void update() override;
 
   void add_fs(Coordinates<double> p);
 
@@ -38,7 +38,7 @@ public:
 
   Coordinates<double> rand_fs();
 
-  AgentType gettype() const;
+  AgentType gettype() const override;
 };
 
 #endif

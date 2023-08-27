@@ -13,11 +13,9 @@ void Hive::init(int totalbees) {
 }
 
 // collecting the bees
-Coordinates<double> Hive::move(ChunkBounds worldBounds) {
-  return this->pos;
-}
+Coordinates<double> Hive::move(ChunkBounds worldBounds) { return this->pos; }
 
-int Hive::getsize() { return ds->size(); }
+int Hive::getsize() const { return ds->size(); }
 
 // spawing new bees
 void Hive::update() {
@@ -28,9 +26,11 @@ void Hive::update() {
   for (int k = 0; release > this->activebees; k++) {
     // release bees
     //  calc the percentage the bee is a scout
-    int beespersource = 200; //this->state->config.beespersource;
-    double scoutpercentage = ((double)totalbees - this->foodsources.size() * beespersource) / totalbees;
-    
+    int beespersource = 200; // this->state->config.beespersource;
+    double scoutpercentage =
+        ((double)totalbees - this->foodsources.size() * beespersource) /
+        totalbees;
+
     // calculate the new position of the bee
     double t = (double)(std::rand() % 10000) / 10000;
     std::random_device rd;
@@ -40,9 +40,8 @@ void Hive::update() {
     double randomX = unif(e2);
     double randomY = unif(e2);
     Coordinates<double> newBeePosition{randomX + this->pos.x,
-                                        this->pos.y + randomY};
+                                       this->pos.y + randomY};
 
-    
     if ((totalbees - this->foodsources.size() > 0 && t < scoutpercentage) ||
         this->foodsources.size() == 0) {
 
@@ -51,7 +50,8 @@ void Hive::update() {
 
       newBee->init(Coordinates<double>{newBeePosition.x, newBeePosition.y},
                    Coordinates<double>{newBeePosition.x, newBeePosition.y},
-                   true, false, Coordinates<double>{newBeePosition.x, newBeePosition.y});
+                   true, false,
+                   Coordinates<double>{newBeePosition.x, newBeePosition.y});
 
       PointValue<double, Agent> newPointValue(newBeePosition, newBee);
       this->state->agents.add(newPointValue);
@@ -61,7 +61,8 @@ void Hive::update() {
           std::make_shared<Bee>(this->state, newBeePosition);
 
       newBee->init(Coordinates<double>{pos.x, pos.y}, this->rand_fs(), true,
-                   true, Coordinates<double>{newBeePosition.x, newBeePosition.y});
+                   true,
+                   Coordinates<double>{newBeePosition.x, newBeePosition.y});
 
       PointValue<double, Agent> newPointValue(newBeePosition, newBee);
       this->state->agents.add(newPointValue);
@@ -75,7 +76,7 @@ void Hive::update() {
 
   for (int k = 0; k < size; k++) {
     if (result->at(k).value->gettype() == AgentType::Bee) {
-      
+
       std::shared_ptr<Agent> a = result->at(k).value;
       std::shared_ptr<Bee> b = std::dynamic_pointer_cast<Bee>(a);
 
@@ -90,7 +91,7 @@ void Hive::update() {
 
       if (b->searching == false && !b->worker && b->found) {
         this->add_fs(b->destination);
-        
+
         PointValue<double, Agent> p =
             PointValue<double, Agent>(result->at(k).value->getPosition(), a);
         this->state->agents.removeByPointValue(p);

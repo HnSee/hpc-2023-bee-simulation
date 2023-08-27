@@ -25,9 +25,9 @@ public:
 
   Coordinates<double> move(ChunkBounds worldBounds) override;
 
-  void update();
+  void update() override;
 
-  AgentType gettype() const;
+  AgentType gettype() const override;
 };
 
 #endif
