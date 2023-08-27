@@ -3,9 +3,9 @@
 #include "chunking.hpp"
 #include "seeding.hpp"
 
-std::vector<AgentTemplate> generateInitialAgents(int xMin, int xMax, int yMin,
-                                                 int yMax,
-                                                 SeedingConfiguration &config) {
+std::vector<AgentTemplate>
+generateInitialAgents(int xMin, int xMax, int yMin, int yMax,
+                      const SeedingConfiguration &config) {
   std::vector<AgentTemplate> result;
 
   std::random_device dev;
