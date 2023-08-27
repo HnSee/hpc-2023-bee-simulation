@@ -15,6 +15,12 @@
 enum class Biome : int { Field, Meadow, City, Waters, Forest };
 std::ostream &operator<<(std::ostream &os, Biome biome);
 
+struct GeneratorConfig {
+  unsigned int seed = 123123123;
+  unsigned int size = 1000;
+  unsigned int biomes = 512;
+};
+
 using WorldCell = Biome;
 
 // Unit is 1x1 Cell is 1m x 1m
@@ -26,13 +32,12 @@ using Color = std::array<double, 3>;
 class WorldGenerator {
 
 public:
+  WorldGenerator(GeneratorConfig &config) : config(config) {}
   std::unique_ptr<WorldMap> generateWorld();
 
 private:
   // Settings
-  unsigned int seed = 123123123;
-  unsigned int size = 1000;
-  unsigned int biomes = 512;
+  GeneratorConfig &config;
   unsigned short relaxations = 4;
   int perlinOctaves = 8;
   unsigned short edgeDisplacement = 12;
@@ -57,13 +62,13 @@ private:
   unsigned short currentZoom;
 
   void generateVoronoiRepresentation();
-  void generateVoronoiSVG(std::string outputPath);
+  void generateVoronoiSVG(const std::string &outputPath);
   void rasterizeVoronoiRepresentation();
   void blurEdges();
   void freeBiomeRegions();
   void assignBiomes();
-  void generateBiomeRegionImage(std::string outputPath);
-  void generateWorldImageWithBiomeColor(std::string outputPath);
+  void generateBiomeRegionImage(const std::string &outputPath);
+  void generateWorldImageWithBiomeColor(const std::string &outputPath);
 };
 
 #endif
