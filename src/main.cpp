@@ -138,7 +138,6 @@ int main(int argc, char **argv) {
       calcualteChunkBounds(edgeLength, edgeLength, processes, rank);
   WorldState state(std::move(world), chunkBounds, worldBounds, processes, rank);
 
-  // TODO: Seed once and distribute to processes
   spdlog::debug("Seeding initial agents...");
   SeedingConfiguration seedingConfig;
   seedingConfig.seed = static_cast<int>(time(nullptr));
