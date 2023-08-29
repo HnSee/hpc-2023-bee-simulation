@@ -23,7 +23,7 @@ src = [
 ]
 
 mpi_dep = dependency('mpi', language: 'cpp')
-omp_dep = dependency('openmp')
+omp_dep = dependency('openmp', language: 'cpp')
 cairo_dep = dependency('cairomm-1.0')
 spdlog_dep = dependency('spdlog')
 cxxopts_dep = dependency('cxxopts')
@@ -77,7 +77,7 @@ test_agents = executable(
     'tests/test_agents.cpp',
     'src/agents/agent_type.cpp'
   ],
-  dependencies: [gtest_dep, cairo_dep, spdlog_dep]
+  dependencies: [gtest_dep, cairo_dep, spdlog_dep, omp_dep]
 )
 
 test_worldstate = executable(
