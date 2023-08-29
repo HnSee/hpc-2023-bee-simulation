@@ -191,8 +191,6 @@ void WorldGenerator::rasterizeVoronoiRepresentation() {
     cr->fill();
   }
 
-  surface->write_to_png("stage_2.png");
-
   auto byteData = surface->get_data();
   int maxCells = surface->get_width() * surface->get_height() * 4;
   int stride = surface->get_stride();
@@ -296,7 +294,7 @@ void WorldGenerator::assignBiomes() {
 #pragma omp critical
       {
         auto biome = biomeMap.insert(biomeIdToBiome);
-        (*this->currentWorldMap)[x][y] = (WorldCell)biome.first->second;
+        (*this->currentWorldMap)[x][y] = biome.first->second;
       }
     }
   }
