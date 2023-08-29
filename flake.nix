@@ -7,6 +7,13 @@
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
+        # spdlog version 1.11.x is not compatible with its dependency
+        # fmt version 10.x but 9.x, but upstream Nix fmt is version 10.x
+        # and spdlog is version 1.11.x (same problem on e.g. Arch Linux).
+        # spdlog version 1.12.x brings compatibility with fmt 10.x but is
+        # not upgraded in nixpkgs yet, see
+        # https://github.com/NixOS/nixpkgs/pull/250435.
+        # That is why a override to upgrade spdlog is needed here:
         spdlog_fix = final: prev: {
           spdlog = prev.spdlog.overrideAttrs (old: {
             version = "1.12.0";
