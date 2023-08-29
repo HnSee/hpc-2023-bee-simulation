@@ -23,19 +23,13 @@ src = [
 ]
 
 mpi_dep = dependency('mpi', language: 'cpp')
-omp_dep = dependency('openmp')
+omp_dep = dependency('openmp', language: 'cpp')
 cairo_dep = dependency('cairomm-1.0')
-
-spdlog_dep = dependency('spdlog', version: '>=1.12.0', fallback: ['spdlog', 'spdlog_dep'])
-cxxopts_dep = dependency('cxxopts', fallback: ['cxxopts', 'cxxopts_dep'])
-
-benchmarking = subproject('google-benchmark')
-benchmarking_dep = benchmarking.get_variable('google_benchmark_dep')
-
-gtest = subproject('gtest')
-gtest_dep = gtest.get_variable('gtest_dep')
-gmock_dep = gtest.get_variable('gmock_dep')
-gtest_main_dep = gtest.get_variable('gtest_main_dep')
+spdlog_dep = dependency('spdlog')
+cxxopts_dep = dependency('cxxopts')
+benchmark_dep = dependency('benchmark')
+gtest_dep = dependency('gtest', main: true)
+gmock_dep = dependency('gmock')
 
 exe = executable(
   'bee_simulation',
@@ -49,7 +43,7 @@ test_point_tree = executable(
   sources: [
     'tests/test_point_tree.cpp'
   ],
-  dependencies: [gtest_dep, gmock_dep, gtest_main_dep, spdlog_dep]
+  dependencies: [gtest_dep, spdlog_dep, gmock_dep]
 )
 
 test_ctd_array = executable(
@@ -57,7 +51,7 @@ test_ctd_array = executable(
   sources: [
     'tests/test_ctd_array.cpp'
   ],
-  dependencies: [gtest_dep, gmock_dep, gtest_main_dep]
+  dependencies: [gtest_dep]
 )
 
 test_chunking = executable(
@@ -66,7 +60,7 @@ test_chunking = executable(
     'src/world/chunking.cpp',
     'tests/test_chunking.cpp'
   ],
-  dependencies: [gtest_dep, gmock_dep, gtest_main_dep]
+  dependencies: [gtest_dep]
 )
 
 test_agents = executable(
@@ -83,7 +77,7 @@ test_agents = executable(
     'tests/test_agents.cpp',
     'src/agents/agent_type.cpp'
   ],
-  dependencies: [gtest_dep, gmock_dep, gtest_main_dep, cairo_dep, spdlog_dep]
+  dependencies: [gtest_dep, cairo_dep, spdlog_dep, omp_dep]
 )
 
 test_worldstate = executable(
@@ -98,7 +92,7 @@ test_worldstate = executable(
     'src/world/worldstate.cpp',
     'tests/test_worldstate.cpp',
   ],
-  dependencies: [gtest_dep, gtest_main_dep, spdlog_dep]
+  dependencies: [gtest_dep, spdlog_dep]
 )
 
 test(
@@ -137,7 +131,7 @@ bm_point_tree = executable(
   sources: [
     'benchmarks/point_tree.cpp'
   ],
-  dependencies: [benchmarking_dep, spdlog_dep]
+  dependencies: [benchmark_dep, spdlog_dep]
 )
 
 benchmark(
