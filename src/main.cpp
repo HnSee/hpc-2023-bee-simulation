@@ -25,20 +25,14 @@ int main(int argc, char **argv) {
   cxxopts::Options options("BeeSimulation", "Agent-based simulation of bees");
 
   options.add_options()("v,verbose", "Enable debug logging",
-                        cxxopts::value<bool>()->default_value("false"))(
-      "e,edge-length", "Edge length of the map",
-      cxxopts::value<unsigned int>()->default_value("1000"))(
-      "b,biomes", "Number of biomes to generate",
-      cxxopts::value<unsigned int>()->default_value("512"))(
-      "r,relaxations", "Number of relaxations to perform",
-      cxxopts::value<unsigned int>()->default_value("1"))(
-      "s,seed", "Seed to use for the world generation",
-      cxxopts::value<unsigned int>())("hives", "Number of hives",
-                                      cxxopts::value<unsigned int>())(
-      "t,ticks", "Number of ticks to execute",
-      cxxopts::value<unsigned int>()->default_value("50000"))(
-      "json", "Output logs in JSON format",
-      cxxopts::value<bool>()->default_value("false"));
+                        cxxopts::value<bool>()->default_value("false"))( "e,edge-length", "Edge length of the map",
+                        cxxopts::value<unsigned int>()->default_value("1000"))("b,biomes", "Number of biomes to generate",
+                        cxxopts::value<unsigned int>()->default_value("512"))("r,relaxations", "Number of relaxations to perform",
+                        cxxopts::value<unsigned int>()->default_value("1"))("s,seed", "Seed to use for the world generation",
+                        cxxopts::value<unsigned int>())("hives", "Number of hives",
+                        cxxopts::value<unsigned int>())("t,ticks", "Number of ticks to execute",
+                        cxxopts::value<unsigned int>()->default_value("50000"))("json", "Output logs in JSON format",
+                        cxxopts::value<bool>()->default_value("false"));
 
   cxxopts::ParseResult result = options.parse(argc, argv);
 
@@ -49,9 +43,21 @@ int main(int argc, char **argv) {
     spdlog::debug("Debug logging level activated");
   }
 
+  //spdlog::set_level(spdlog::level::debug);
+
   if (result["json"].as<bool>()) {
     // spdlog::set_pattern("{\"message\": \"%v\", \"time\": \"%t\"}");
     spdlog::set_pattern(R"({"message": "%v"})");
+  }
+  
+
+  unsigned int num_hives;
+  if (result.count("hives")) {
+    std::cout << " YES \n";
+    num_hives = result["hives"].as<unsigned int>();
+  } else {
+    std::cout << " NO \n";
+    num_hives = 1;
   }
 
   unsigned int seed;
@@ -142,11 +148,7 @@ int main(int argc, char **argv) {
   SeedingConfiguration seedingConfig;
   seedingConfig.seed = static_cast<int>(time(nullptr));
   seedingConfig.flowerCount = 3000;
-  seedingConfig.hiveCount = 0;
-
-  if (rank == 0) {
-    seedingConfig.hiveCount = 1;
-  }
+  seedingConfig.hiveCount = num_hives;
 
   std::vector<AgentTemplate> initialAgents =
       generateInitialAgents(chunkBounds.xMin, chunkBounds.xMax,
