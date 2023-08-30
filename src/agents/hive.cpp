@@ -6,7 +6,7 @@
 
 void Hive::init(int totalbees) {
   tickoftheday = 0;
-  this->totalbees = totalbees;
+  this->totalbees = 100000;
   this->ds = ds;
   this->activebees = 0;
   this->totalfood = 0;
@@ -21,7 +21,7 @@ int Hive::getsize() const { return ds->size(); }
 void Hive::update() {
   tickoftheday += 1;
   double x = (double)tickoftheday / this->state->config.daylength;
-  int release = totalbees * (-3 * (x - 0.5) * (x - 0.5) + 1);
+  int release = totalbees * (-3.5 * (x - 0.5) * (x - 0.5) + 1);
 
   for (int k = 0; release > this->activebees; k++) {
     // release bees
