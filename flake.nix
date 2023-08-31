@@ -57,6 +57,25 @@
               spdlog
             ];
           };
+          
+          bee-simulation-cmake = pkgs.stdenv.mkDerivation rec {
+            name = "bee-simulation-cmake";
+            src = self;
+
+            nativeBuildInputs = with pkgs; [
+              cmake
+              pkg-config
+            ];
+
+            buildInputs = with pkgs; [
+              cairomm
+              cxxopts
+              gbenchmark
+              gtest
+              openmpi
+              spdlog
+            ];
+          };
         };
 
         defaultPackage = packages.bee-simulation;

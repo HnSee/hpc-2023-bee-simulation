@@ -1,6 +1,6 @@
 #include "bee.hpp"
 #include "flower.hpp"
-#include "src/agents/agent.hpp"
+#include "agent.hpp"
 
 void Bee::init(Coordinates<double> hivepos, Coordinates<double> destination,
                bool searching, bool worker, Coordinates<double> posi) {
