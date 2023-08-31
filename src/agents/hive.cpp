@@ -6,7 +6,7 @@
 
 void Hive::init(int totalbees) {
   tickoftheday = 0;
-  this->totalbees = 100000;
+  this->totalbees = 40000;
   this->ds = ds;
   this->activebees = 0;
   this->totalfood = 0;
@@ -38,7 +38,7 @@ void Hive::update() {
     // Getting a random double value
     double randomX = unif(e2);
     double randomY = unif(e2);
-    
+
     Coordinates<double> newBeePosition{randomX + this->pos.x,
                                        this->pos.y + randomY};
 

@@ -22,7 +22,7 @@ struct AgentTemplate {
 
 std::vector<AgentTemplate>
 generateInitialAgents(int xMin, int xMax, int yMin, int yMax,
-                      const SeedingConfiguration &config);
+                      const SeedingConfiguration &config, int el);
 
 std::vector<std::vector<AgentTemplate>>
 partitionInitialAgentsIntoChunks(std::vector<AgentTemplate> &initialAgents,

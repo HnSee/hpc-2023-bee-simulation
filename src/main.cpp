@@ -24,15 +24,23 @@ void checkForMPIError(int err, std::string action) {
 int main(int argc, char **argv) {
   cxxopts::Options options("BeeSimulation", "Agent-based simulation of bees");
 
-  options.add_options()("v,verbose", "Enable debug logging",cxxopts::value<bool>()->default_value("false"))
-                        ( "e,edge-length", "Edge length of the map", cxxopts::value<unsigned int>()->default_value("1000"))
-                        ("b,biomes", "Number of biomes to generate", cxxopts::value<unsigned int>()->default_value("512"))
-                        ("r,relaxations", "Number of relaxations to perform", cxxopts::value<unsigned int>()->default_value("1"))
-                        ("s,seed", "Seed to use for the world generation", cxxopts::value<unsigned int>())
-                        ("hives", "Number of hives", cxxopts::value<unsigned int>())
-                        ("t,ticks", "Number of ticks to execute",cxxopts::value<unsigned int>()->default_value("50000"))
-                        ("json", "Output logs in JSON format",cxxopts::value<bool>()->default_value("false"))
-                        ("benchmark", "Benchmark", cxxopts::value<unsigned int>()->default_value("0"));
+  options.add_options()("v,verbose", "Enable debug logging",
+                        cxxopts::value<bool>()->default_value("false"))(
+      "e,edge-length", "Edge length of the map",
+      cxxopts::value<unsigned int>()->default_value("1000"))(
+      "b,biomes", "Number of biomes to generate",
+      cxxopts::value<unsigned int>()->default_value("512"))(
+      "r,relaxations", "Number of relaxations to perform",
+      cxxopts::value<unsigned int>()->default_value("1"))(
+      "s,seed", "Seed to use for the world generation",
+      cxxopts::value<unsigned int>())("hives", "Number of hives",
+                                      cxxopts::value<unsigned int>())(
+      "t,ticks", "Number of ticks to execute",
+      cxxopts::value<unsigned int>()->default_value("50000"))(
+      "json", "Output logs in JSON format",
+      cxxopts::value<bool>()->default_value("false"))(
+      "benchmark", "Benchmark",
+      cxxopts::value<unsigned int>()->default_value("0"));
 
   cxxopts::ParseResult result = options.parse(argc, argv);
 
@@ -45,12 +53,11 @@ int main(int argc, char **argv) {
 
   unsigned int benchmarkduration;
   benchmarkduration = result["benchmark"].as<unsigned int>();
-  
+
   if (result["json"].as<bool>()) {
     // spdlog::set_pattern("{\"message\": \"%v\", \"time\": \"%t\"}");
     spdlog::set_pattern(R"({"message": "%v"})");
   }
-  
 
   unsigned int num_hives;
   if (result.count("hives")) {
@@ -149,10 +156,10 @@ int main(int argc, char **argv) {
   seedingConfig.flowerCount = 3000;
   seedingConfig.hiveCount = num_hives;
 
-  std::vector<AgentTemplate> initialAgents =
-      generateInitialAgents(chunkBounds.xMin, chunkBounds.xMax,
-                            chunkBounds.yMin, chunkBounds.yMax, seedingConfig);
+  std::vector<AgentTemplate> initialAgents = generateInitialAgents(chunkBounds.xMin, chunkBounds.xMax, chunkBounds.yMin, chunkBounds.yMax, seedingConfig, edgeLength);
+
   state.init(initialAgents);
+
   spdlog::debug("Initial agents seeded.");
   spdlog::debug(
       "Chunk {} with borders [{}, {}) and [{}, {}) and {} agents initialized.",
@@ -167,29 +174,32 @@ int main(int argc, char **argv) {
 
   spdlog::stopwatch sw;
   for (unsigned int tick = 0; tick <= ticks; ++tick) {
+    sw.reset();
 
-    if (rank == 0){
+    if (rank == 0) {
       std::cout << tick << "\n";
     }
-    
+
     if (rank == 0 && tick % 100 == 0) {
       spdlog::debug("Current tick: {}", tick);
     }
-    
-    if (tick == 3 && rank == 0 && benchmarkduration != 0){
+
+    if (tick == 3 && rank == 0 && benchmarkduration != 0) {
       sw.reset();
     }
 
-    if (tick == benchmarkduration + 3 && rank == 0 && benchmarkduration != 0){
-      spdlog::info("Benchmark time: {} ",sw);
+    if (tick == benchmarkduration + 3 && rank == 0 && benchmarkduration != 0) {
+      spdlog::info("Benchmark time: {} ", sw);
       MPI_Finalize();
       return EXIT_SUCCESS;
     }
-    
+
     // Basic tick
     std::vector<AgentToTransfer> agentsToTransfer = state.tick();
+    std::cout << state.agents.count();
+    spdlog::info("Tick Time: {} ", sw);
 
-    std::string a = state.agents.toCsv();
+    // std::string a = state.agents.toCsv();
 
     // Transfer necessary agents
     for (int receiver = 0; receiver < processes; ++receiver) {
