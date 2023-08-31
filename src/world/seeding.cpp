@@ -4,36 +4,43 @@
 #include "seeding.hpp"
 
 std::vector<AgentTemplate>
-generateInitialAgents(int xMin, int xMax, int yMin, int yMax,
-                      const SeedingConfiguration &config) {
+generateInitialAgents( int xMin, int xMax, int yMin, int yMax, const SeedingConfiguration &config, int el) {
   std::vector<AgentTemplate> result;
 
   std::random_device dev;
   std::mt19937 rng(dev());
-  std::uniform_real_distribution<double> unfX(xMin, xMax);
-  std::uniform_real_distribution<double> unfY(yMin, yMax);
+  std::uniform_real_distribution<double> unfX(0, el);
+  std::uniform_real_distribution<double> unfY(0, el);
 
   if (config.hiveCount == 1) {
     double posX = (xMin + xMax) / 4 * 3;
     double posY = (yMin + yMax) / 4 * 3;
 
-    result.emplace_back(posX, posY, AgentType::Hive);
+    if(posX > xMin && posX < xMax && posY > yMin && posY < yMax){
+      result.emplace_back(posX, posY, AgentType::Hive);
+    }
   } else {
     for (int i = 0; i < config.hiveCount; ++i) {
       double randomX = unfX(rng);
       double randomY = unfY(rng);
 
-      result.emplace_back(randomX, randomY, AgentType::Hive);
+      if(randomX > xMin && randomX < xMax && randomY > yMin && randomY < yMax){
+        result.emplace_back(randomX, randomY, AgentType::Hive);
+      }
+      else{
+        std::cout << "lol";
+      }
+
     }
   }
 
   for (int i = 0; i < config.flowerCount; ++i) {
     double randomX = unfX(rng);
     double randomY = unfY(rng);
-
-    result.emplace_back(randomX, randomY, AgentType::Flower);
+    if(randomX > xMin && randomX < xMax && randomY > yMin && randomY < yMax){
+      result.emplace_back(randomX, randomY, AgentType::Flower);
+    }
   }
-
   return result;
 }
 

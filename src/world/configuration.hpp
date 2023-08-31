@@ -2,10 +2,10 @@
 #define BEESIMULATION_WORLD_CONFIGURATION_H
 
 struct Configuration {
-  const int scoutindurance = 90;
+  const int scoutindurance = 70;
   const int daylength = 43200;
-  const float speed = 8;
-  const int beespersource = 100;
+  const float speed = 5;
+  const int beespersource = 200;
 };
 
 #endif
