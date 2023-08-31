@@ -12,7 +12,6 @@ void Hive::init(int totalbees) {
   this->totalfood = 0;
 }
 
-// collecting the bees
 Coordinates<double> Hive::move(ChunkBounds worldBounds) { return this->pos; }
 
 int Hive::getsize() const { return ds->size(); }
@@ -35,10 +34,11 @@ void Hive::update() {
     double t = (double)(std::rand() % 10000) / 10000;
     std::random_device rd;
     std::mt19937 e2(rd());
-    std::uniform_real_distribution<double> unif(0, 1);
+    std::uniform_real_distribution<double> unif(0, 10);
     // Getting a random double value
     double randomX = unif(e2);
     double randomY = unif(e2);
+    
     Coordinates<double> newBeePosition{randomX + this->pos.x,
                                        this->pos.y + randomY};
 
@@ -71,7 +71,7 @@ void Hive::update() {
     this->activebees += 1;
   }
 
-  auto result = this->state->agents.range(pos, 1);
+  auto result = this->state->agents.range(pos, 0.01);
   int size = result->size();
 
   for (int k = 0; k < size; k++) {

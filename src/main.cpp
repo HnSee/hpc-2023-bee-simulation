@@ -171,7 +171,7 @@ int main(int argc, char **argv) {
     if (rank == 0){
       std::cout << tick << "\n";
     }
-
+    
     if (rank == 0 && tick % 100 == 0) {
       spdlog::debug("Current tick: {}", tick);
     }

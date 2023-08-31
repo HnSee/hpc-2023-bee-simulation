@@ -33,7 +33,6 @@ generateInitialAgents(int xMin, int xMax, int yMin, int yMax,
 
     result.emplace_back(randomX, randomY, AgentType::Flower);
   }
-
   return result;
 }
 
