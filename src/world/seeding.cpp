@@ -27,9 +27,6 @@ generateInitialAgents( int xMin, int xMax, int yMin, int yMax, const SeedingConf
       if(randomX > xMin && randomX < xMax && randomY > yMin && randomY < yMax){
         result.emplace_back(randomX, randomY, AgentType::Hive);
       }
-      else{
-        std::cout << "lol";
-      }
 
     }
   }

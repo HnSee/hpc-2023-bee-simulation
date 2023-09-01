@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 #include <cxxopts.hpp>
 #include <fstream>
 #include <iostream>
@@ -153,10 +154,12 @@ int main(int argc, char **argv) {
   spdlog::debug("Seeding initial agents...");
   SeedingConfiguration seedingConfig;
   seedingConfig.seed = static_cast<int>(time(nullptr));
-  seedingConfig.flowerCount = 3000;
+  seedingConfig.flowerCount = 10000;
   seedingConfig.hiveCount = num_hives;
 
-  std::vector<AgentTemplate> initialAgents = generateInitialAgents(chunkBounds.xMin, chunkBounds.xMax, chunkBounds.yMin, chunkBounds.yMax, seedingConfig, edgeLength);
+  std::vector<AgentTemplate> initialAgents = generateInitialAgents(
+      chunkBounds.xMin, chunkBounds.xMax, chunkBounds.yMin, chunkBounds.yMax,
+      seedingConfig, edgeLength);
 
   state.init(initialAgents);
 
@@ -174,7 +177,6 @@ int main(int argc, char **argv) {
 
   spdlog::stopwatch sw;
   for (unsigned int tick = 0; tick <= ticks; ++tick) {
-    sw.reset();
 
     if (rank == 0) {
       std::cout << tick << "\n";
@@ -188,16 +190,15 @@ int main(int argc, char **argv) {
       sw.reset();
     }
 
-    if (tick == benchmarkduration + 3 && rank == 0 && benchmarkduration != 0) {
-      spdlog::info("Benchmark time: {} ", sw);
-      MPI_Finalize();
-      return EXIT_SUCCESS;
+    if (tick == benchmarkduration + 3 && benchmarkduration != 0) {
+      if (rank == 0) {
+        spdlog::info("Benchmark time: {} ", sw);
+      }
+      tick = ticks + 1;
     }
 
     // Basic tick
     std::vector<AgentToTransfer> agentsToTransfer = state.tick();
-    std::cout << state.agents.count();
-    spdlog::info("Tick Time: {} ", sw);
 
     // std::string a = state.agents.toCsv();
 
