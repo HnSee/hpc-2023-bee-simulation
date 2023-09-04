@@ -204,6 +204,8 @@ TEST(PointTree, NearestInt1) {
   EXPECT_EQ(result->value, 50);
   EXPECT_EQ(result->distance, 1);
   EXPECT_EQ(result->visited, 2);
+
+  delete result;
 }
 
 TEST(PointTree, NearestDouble1) {
@@ -221,6 +223,8 @@ TEST(PointTree, NearestDouble1) {
   EXPECT_EQ(result->value, 40);
   EXPECT_EQ(result->distance, 1);
   EXPECT_EQ(result->visited, 3);
+
+  delete result;
 }
 
 TEST(PointTree, AddInt1) {
