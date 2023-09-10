@@ -8,7 +8,5 @@ do
     esac
 done
 
-module load mpi/openmpi
-
 mpirun -n $num_threads builddir/bee_simulation --hives $hives --seed $seed --benchmark $benchmark -e 1000
 

@@ -17,11 +17,6 @@ void Agent::update() {
   return;
 }
 
-void Agent::specialinteraction() {
-  std::cout << "This is an empty declaration! \n";
-  return;
-}
-
 std::ostream &operator<<(std::ostream &output, const Agent &a) {
   output << "[" << a.gettype() << "]";
   return output;

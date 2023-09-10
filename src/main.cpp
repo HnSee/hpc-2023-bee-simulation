@@ -25,10 +25,9 @@ void checkForMPIError(int err, std::string action) {
 int main(int argc, char **argv) {
   cxxopts::Options options("BeeSimulation", "Agent-based simulation of bees");
 
-  options.add_options()("v,verbose", "Enable debug logging",
-                        cxxopts::value<bool>()->default_value("false"))(
-      "e,edge-length", "Edge length of the map",
-      cxxopts::value<unsigned int>()->default_value("1000"))(
+  options.add_options() ("v,verbose", "Enable debug logging", cxxopts::value<bool>()->default_value("false"))
+                        ("e,edge-length", "Edge length of the map",cxxopts::value<unsigned int>()->default_value("1000"))
+                        ( "f,flowercount", "flower count of the map", cxxopts::value<unsigned int>()->default_value("10000"))(
       "b,biomes", "Number of biomes to generate",
       cxxopts::value<unsigned int>()->default_value("512"))(
       "r,relaxations", "Number of relaxations to perform",
@@ -154,7 +153,7 @@ int main(int argc, char **argv) {
   spdlog::debug("Seeding initial agents...");
   SeedingConfiguration seedingConfig;
   seedingConfig.seed = static_cast<int>(time(nullptr));
-  seedingConfig.flowerCount = 10000;
+  seedingConfig.flowerCount = result.count("flowercount");
   seedingConfig.hiveCount = num_hives;
 
   std::vector<AgentTemplate> initialAgents = generateInitialAgents(
@@ -179,7 +178,7 @@ int main(int argc, char **argv) {
   for (unsigned int tick = 0; tick <= ticks; ++tick) {
 
     if (rank == 0) {
-      std::cout << tick << "\n";
+      spdlog::info("Benchmark time: {} ", tick);
     }
 
     if (rank == 0 && tick % 100 == 0) {
