@@ -177,10 +177,6 @@ int main(int argc, char **argv) {
   spdlog::stopwatch sw;
   for (unsigned int tick = 0; tick <= ticks; ++tick) {
 
-    if (rank == 0) {
-      spdlog::info("Benchmark time: {} ", tick);
-    }
-
     if (rank == 0 && tick % 100 == 0) {
       spdlog::debug("Current tick: {}", tick);
     }
