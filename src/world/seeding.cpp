@@ -7,26 +7,26 @@ std::vector<AgentTemplate>
 generateInitialAgents( int xMin, int xMax, int yMin, int yMax, const SeedingConfiguration &config, int el, int seed) {
   std::vector<AgentTemplate> result;
   
-  std::uniform_real_distribution<double> unif(0, 0.00001);
+  std::uniform_real_distribution<double> unif(0, 0.1);
   std::random_device rd;
   std::mt19937 e2(rd());
   std::srand(seed);
 
   for (int i = 0; i < config.hiveCount; ++i) {
-    int randomX = std::rand()%el;
-    int randomY = std::rand()%el;
+    int randomX = std::rand()%el+unif(e2);
+    int randomY = std::rand()%el+unif(e2);
 
     if(randomX >= xMin && randomX <= xMax && randomY >= yMin && randomY <= yMax){
-      result.emplace_back(randomX+unif(e2), randomY+unif(e2), AgentType::Hive);
+      result.emplace_back(randomX, randomY, AgentType::Hive);
     }
   }
 
   for (int i = 0; i < config.flowerCount; ++i) {
-    int randomX = std::rand()%el;
-    int randomY = std::rand()%el;
+    int randomX = std::rand()%el+unif(e2);
+    int randomY = std::rand()%el+unif(e2);
 
     if(randomX >= xMin && randomX <= xMax && randomY >= yMin && randomY <= yMax){
-      result.emplace_back(randomX+unif(e2), randomY+unif(e2), AgentType::Hive);
+      result.emplace_back(randomX, randomY, AgentType::Flower);
     }
   }
   return result;

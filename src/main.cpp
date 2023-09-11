@@ -198,8 +198,6 @@ int main(int argc, char **argv) {
     // Basic tick
     std::vector<AgentToTransfer> agentsToTransfer = state.tick();
 
-    // std::string a = state.agents.toCsv();
-
     // Transfer necessary agents
     for (int receiver = 0; receiver < processes; ++receiver) {
       // Receive bees
