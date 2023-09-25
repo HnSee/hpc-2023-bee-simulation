@@ -31,7 +31,6 @@ set(SOURCES
     src/world/worldstate.hpp
     src/utils/coordinates.hpp
     src/utils/ctd_array.hpp
-    src/utils/pair_hash.hpp
     src/utils/point_tree.hpp)
 
 find_package(MPI REQUIRED)
