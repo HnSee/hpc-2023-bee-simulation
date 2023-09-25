@@ -7,23 +7,20 @@ Project for the **Practical Course on High-Performance Computing** at the Georg-
 
 ## Dependencies
 - A C++14 compatible C++ compiler like [GCC](https://gcc.gnu.org/) [[packages](https://repology.org/project/gcc/versions)]
-- [Meson](https://mesonbuild.com/) (build system) [[packages](https://repology.org/project/meson/versions)]
+- [Meson](https://mesonbuild.com/) *or* [CMake](https://cmake.org/) (build system) [[packages](https://repology.org/project/cmake/versions)]
 - [Ninja](https://repology.org/project/ninja/versions) (build system backend, [others possible](https://mesonbuild.com/Running-Meson.html)) [[packages](https://repology.org/project/ninja/versions)]
 - [Cairo](https://www.cairographics.org/)/[cairomm](https://www.cairographics.org/cairomm/) (graphics library used in world generation steps) [[packages](https://repology.org/project/cairomm/versions)]
-
-Further smaller dependencies will be automatically downloaded by meson and include:
-- [spdlog](https://github.com/gabime/spdlog) (logging)
-- [cxxopts](https://github.com/jarro2783/cxxopts) (command line arguments parsing)
-- [Benchmark](https://github.com/google/benchmark) (benchmarking)
-- [GoogleTest](https://github.com/google/googletest) (testing)
+- [spdlog](https://github.com/gabime/spdlog) (logging) [[packages](https://repology.org/project/spdlog/versions)]
+- [cxxopts](https://github.com/jarro2783/cxxopts) (command line arguments parsing) [[packages][https://repology.org/project/cxxopts/versions]]
+- [Benchmark](https://github.com/google/benchmark) (benchmarking) [[packages](https://repology.org/project/benchmark/versions)]
+- [GoogleTest](https://github.com/google/googletest) (testing) [[packages](https://repology.org/project/gtest/versions)]
 
 Some simple libraries or implementations have been transferred directly into this repository and can be found under `src/extern/`:
 - [jc_voronoi](https://github.com/JCash/voronoi) (Fortune's sweep algorithm implementation used in world generation steps)
 - [Perlin Simplex Noise C++ Implementation](https://github.com/SRombauts/SimplexNoise) (Perlin's Simplex noise implementation used in world generation steps)
-- [boost's `hash_combine`](https://www.boost.org/doc/libs/1_35_0/doc/html/boost/hash_combine_id241013.html) (hashing algorithm for multiple values)
 
 ## Building
-Building the application uses [Meson](https://mesonbuild.com/) and is therefore very simple. The process consists of two steps.
+Building the application uses [Meson](https://mesonbuild.com/) (or [CMake](https://cmake.org/)) and is therefore very simple. The process consists of two steps.
 
 First, configure a building directory `builddir`:
 ```console
