@@ -5,7 +5,7 @@ project(
   VERSION 0.0.1
   LANGUAGES CXX)
 
-option(PACKAGE_TESTS "Build the tests" ON)
+option(BUILD_TESTS "Build the tests" OFF)
 
 set(SOURCES
     src/main.cpp
@@ -43,7 +43,7 @@ find_package(benchmark REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(CAIROMM REQUIRED IMPORTED_TARGET cairomm-1.0)
 
-if(PACKAGE_TESTS)
+if(BUILD_TESTS)
   include (CTest)
   enable_testing()
   find_package(GTest REQUIRED)
@@ -54,8 +54,49 @@ if(PACKAGE_TESTS)
                           spdlog::spdlog_header_only)
     gtest_discover_tests(${TESTNAME})
   endmacro()
+  
+  macro(m_add_test_with_libs TESTNAME)
+    set(flags)
+    set(args)
+    set(listArgs SOURCES LIBRARIES)
+
+    cmake_parse_arguments(arg "${flags}" "${args}" "${listArgs}" ${ARGN})
+
+    add_executable(${TESTNAME} ${arg_SOURCES})
+    target_link_libraries(${TESTNAME} PUBLIC GTest::gtest_main GTest::gmock spdlog::spdlog_header_only ${arg_LIBRARIES})
+    gtest_discover_tests(${TESTNAME})
+  endmacro()
 
   m_add_test(test_point_tree tests/test_point_tree.cpp)
+  m_add_test(test_ctd_array tests/test_ctd_array.cpp)
+  m_add_test(test_chunking src/world/chunking.cpp tests/test_chunking.cpp)
+  m_add_test_with_libs(
+    test_agents
+    SOURCES
+      src/agents/agent.cpp
+      src/agents/bee.cpp
+      src/agents/flower.cpp
+      src/agents/hive.cpp
+      src/world/chunking.cpp
+      src/world/generator.cpp
+      src/world/worldstate.cpp
+      src/extern/simplex/SimplexNoise.cpp
+      src/agents/agent_type.cpp
+      tests/test_agents.cpp
+    LIBRARIES
+      PkgConfig::CAIROMM
+      OpenMP::OpenMP_CXX)
+  m_add_test(
+    test_worldstate
+    src/agents/agent.cpp
+    src/agents/agent_type.cpp
+    src/agents/bee.cpp
+    src/agents/flower.cpp
+    src/agents/hive.cpp
+    src/world/chunking.cpp
+    src/world/worldstate.cpp
+    tests/test_worldstate.cpp
+    tests/test_worldstate.cpp)
 
   add_custom_target(
     test_memcheck
