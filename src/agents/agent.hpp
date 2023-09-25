@@ -24,8 +24,6 @@ public:
   // update of agent after move
   virtual void update();
 
-  virtual void specialinteraction();
-
   virtual AgentType gettype() const = 0;
 
   Coordinates<double> getPosition() const;

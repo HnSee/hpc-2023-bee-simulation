@@ -25,19 +25,16 @@ void checkForMPIError(int err, std::string action) {
 int main(int argc, char **argv) {
   cxxopts::Options options("BeeSimulation", "Agent-based simulation of bees");
 
-  options.add_options()("v,verbose", "Enable debug logging",
-                        cxxopts::value<bool>()->default_value("false"))(
-      "e,edge-length", "Edge length of the map",
-      cxxopts::value<unsigned int>()->default_value("1000"))(
+  options.add_options() ("v,verbose", "Enable debug logging", cxxopts::value<bool>()->default_value("false"))
+                        ("e,edge-length", "Edge length of the map",cxxopts::value<unsigned int>()->default_value("1000"))
+                        ( "f,flowercount", "flower count of the map", cxxopts::value<unsigned int>()->default_value("10000"))
+                        (
       "b,biomes", "Number of biomes to generate",
       cxxopts::value<unsigned int>()->default_value("512"))(
       "r,relaxations", "Number of relaxations to perform",
-      cxxopts::value<unsigned int>()->default_value("1"))(
-      "s,seed", "Seed to use for the world generation",
-      cxxopts::value<unsigned int>())("hives", "Number of hives",
-                                      cxxopts::value<unsigned int>())(
-      "t,ticks", "Number of ticks to execute",
-      cxxopts::value<unsigned int>()->default_value("50000"))(
+      cxxopts::value<unsigned int>()->default_value("0"))( "s,seed", "Seed to use for the world generation", cxxopts::value<unsigned int>())
+      ("hives", "Number of hives",cxxopts::value<unsigned int>())
+      ("t,ticks", "Number of ticks to execute",cxxopts::value<unsigned int>()->default_value("50000"))(
       "json", "Output logs in JSON format",
       cxxopts::value<bool>()->default_value("false"))(
       "benchmark", "Benchmark",
@@ -70,8 +67,9 @@ int main(int argc, char **argv) {
   unsigned int seed;
   if (result.count("s")) {
     seed = result["s"].as<unsigned int>();
-  } else {
-    seed = (unsigned)time(nullptr);
+  }
+  else{
+    seed = 0;
   }
 
   unsigned int edgeLength = result["e"].as<unsigned int>();
@@ -154,12 +152,14 @@ int main(int argc, char **argv) {
   spdlog::debug("Seeding initial agents...");
   SeedingConfiguration seedingConfig;
   seedingConfig.seed = static_cast<int>(time(nullptr));
-  seedingConfig.flowerCount = 10000;
+  seedingConfig.flowerCount = result["f"].as<unsigned int>();
   seedingConfig.hiveCount = num_hives;
+  
+
 
   std::vector<AgentTemplate> initialAgents = generateInitialAgents(
       chunkBounds.xMin, chunkBounds.xMax, chunkBounds.yMin, chunkBounds.yMax,
-      seedingConfig, edgeLength);
+      seedingConfig, edgeLength, seed);
 
   state.init(initialAgents);
 
@@ -175,12 +175,10 @@ int main(int argc, char **argv) {
     spdlog::info("Beginning simulation for {} ticks.", ticks);
   }
 
+  spdlog::info("Agents: {}", state.agents.count());
+
   spdlog::stopwatch sw;
   for (unsigned int tick = 0; tick <= ticks; ++tick) {
-
-    if (rank == 0) {
-      std::cout << tick << "\n";
-    }
 
     if (rank == 0 && tick % 100 == 0) {
       spdlog::debug("Current tick: {}", tick);
@@ -199,8 +197,6 @@ int main(int argc, char **argv) {
 
     // Basic tick
     std::vector<AgentToTransfer> agentsToTransfer = state.tick();
-
-    // std::string a = state.agents.toCsv();
 
     // Transfer necessary agents
     for (int receiver = 0; receiver < processes; ++receiver) {
