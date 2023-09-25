@@ -3,7 +3,7 @@
 Project for the **Practical Course on High-Performance Computing** at the Georg-August-Universität Göttingen, summer term 2023.
 
 ## Idea
-*TODO*
+The main idea of the project is to implement a simulation for studying bee behavior in a simplified ecosystem. Our motivation is the bee mortality observed over the last decades.
 
 ## Dependencies
 - A C++14 compatible C++ compiler like [GCC](https://gcc.gnu.org/) [[packages](https://repology.org/project/gcc/versions)]
